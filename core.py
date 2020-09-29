@@ -42,7 +42,7 @@ async def on_message(message):
 
         members = []
         async for member in message.guild.fetch_members():
-            if member != client.user and str(member) != "WarrenYC#3813":
+            if member != client.user and str(member) != "WarrenYC#3813" and not member.bot:
                 members.append(member)
 
         role = None
