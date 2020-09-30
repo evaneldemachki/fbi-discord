@@ -1,6 +1,7 @@
 import os
 import random
 import discord
+from discord import Embed
 from discord.ext.commands import Bot
 import sqlite3
 import re
@@ -18,6 +19,8 @@ c.execute('''CREATE TABLE IF NOT EXISTS trump
 
 conn.commit()
 
+MODS = ["WarrenYC#3813", "chaostheory#9357"]
+
 client = discord.Client()
 
 async def unmute(channel, member, role):
@@ -34,15 +37,88 @@ async def on_message(message):
     if message.author == client.user:
         return
     
+    if message.content.split(' ')[0] == "!mute":
+        if str(message.author) not in MODS:
+            response = "**Think-You're-Clever Error**: Who the bloody hell do you think you are?"
+            await message.channel.send(response)
+            return
+        
+        if len(message.mentions) == 0:
+            response = "**Dumb-As-Rocks Error**: Oy! You thick in the skull, kid?"
+
+        role = None
+        for entry in message.guild.roles:
+            if entry.name == "Muted":
+                role = entry
+                break
+
+        members = []
+        for member in message.mentions:
+            if str(member) not in MODS and member != client.user:
+                await member.add_roles(role)
+                members.append(str(member))
+        
+        if len(members) == 0:
+            return
+        
+        members = [mem.mention for mem in members]
+        response = "Right, then. I muted the following assholes: {0}"
+        response = response.format(", ".join(members))
+        await message.channel.send(response)
+
+    if message.content.split(' ')[0] == "!unmute":
+        if str(message.author) not in MODS:
+            response = "**Think-You're-Clever Error**: Who the bloody hell do you think you are?"
+            await message.channel.send(response)
+            return
+        
+        if len(message.mentions) == 0:
+            response = "**Dumb-As-Rocks Error**: Oy! You thick in the skull, kid?"
+
+        role = None
+        for entry in message.guild.roles:
+            if entry.name == "Muted":
+                role = entry
+                break
+
+        members = []
+        for member in message.mentions:
+            if str(member) not in MODS and member != client.user and member in role.members:
+                await member.remove_roles(role)
+                members.append(str(member))
+        
+        if len(members) == 0:
+            return
+        
+        members = [mem.mention for mem in members]
+        response = "Yeah alright mate, whatever. Unmuted: {0}"
+        response = response.format(", ".join(members))
+        await message.channel.send(response)
+    
+    if message.content.rstrip() == "!muted":
+        role = None
+        for entry in message.guild.roles:
+            if entry.name == "Muted":
+                role = entry
+                break
+        
+        members = [mem.mention for mem in role.members]
+        if len(members) == 0:
+            return
+        
+        members = ", ".join(members)
+        response = "Dickheads: {0}".format(members)
+        await message.channel.send(response)
+    
     if message.content.rstrip() == "!choi":
-        if str(message.author) != "WarrenYC#3813" and str(message.author) != "chaostheory#9357":
-            response = "Error: Access Denied"
+        if str(message.author) not in MODS:
+            response = "**Think-You're-Clever Error**: Who the bloody hell do you think you are?"
             await message.channel.send(response)
             return
 
         members = []
         async for member in message.guild.fetch_members():
-            if member != client.user and str(member) != "WarrenYC#3813" and not member.bot:
+            if member != client.user and str(member) not in MODS and not member.bot:
                 members.append(member)
 
         role = None
@@ -67,8 +143,17 @@ async def on_message(message):
             response = response.split('—')[0] + '\n— ' + response.split('—')[1]
         else:
             response += '\n— Donald J. Trump'
-            await message.channel.send(response)
-            return
+
+        embed = Embed(
+            description=response
+        )
+
+        embed.set_thumbnail(
+            url="https://i.insider.com/5ea18a43a2fd914dad7b2073?width=1100&format=jpeg&auto=webp"
+        )
+
+        await message.channel.send(embed=embed)
+        return
 
 
 client.run(TOKEN)
