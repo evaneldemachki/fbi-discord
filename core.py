@@ -20,6 +20,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS trump
 conn.commit()
 
 MODS = ["WarrenYC#3813", "chaostheory#9357"]
+MUTED = []
 
 client = discord.Client()
 
@@ -56,6 +57,7 @@ async def on_message(message):
         for member in message.mentions:
             if str(member) not in MODS and member != client.user:
                 await member.add_roles(role)
+                MUTED.append(member)
                 members.append(member)
         
         if len(members) == 0:
@@ -83,8 +85,10 @@ async def on_message(message):
 
         members = []
         for member in message.mentions:
-            if str(member) not in MODS and member != client.user and member in role.members:
+            if str(member) not in MODS and member != client.user and member in MUTED:
                 await member.remove_roles(role)
+                index = MUTED.index(member)
+                MUTED.pop(index)
                 members.append(member)
         
         if len(members) == 0:
@@ -95,14 +99,8 @@ async def on_message(message):
         response = response.format(", ".join(members))
         await message.channel.send(response)
     
-    if message.content.rstrip() == "!muted":
-        role = None
-        for entry in message.guild.roles:
-            if entry.name == "Muted":
-                role = entry
-                break
-        
-        members = [mem.mention for mem in role.members]
+    if message.content.rstrip() == "!muted":  
+        members = [mem.mention for mem in MUTED]
         if len(members) == 0:
             return
         
