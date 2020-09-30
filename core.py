@@ -56,7 +56,7 @@ async def on_message(message):
         for member in message.mentions:
             if str(member) not in MODS and member != client.user:
                 await member.add_roles(role)
-                members.append(str(member))
+                members.append(member)
         
         if len(members) == 0:
             return
@@ -85,7 +85,7 @@ async def on_message(message):
         for member in message.mentions:
             if str(member) not in MODS and member != client.user and member in role.members:
                 await member.remove_roles(role)
-                members.append(str(member))
+                members.append(member)
         
         if len(members) == 0:
             return
