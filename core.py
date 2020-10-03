@@ -2,7 +2,7 @@ import os
 import random
 import json
 import discord
-from discord import Embed
+from discord import Embed, Image
 from discord.ext.commands import Bot
 import sqlite3
 import re
@@ -10,6 +10,8 @@ import asyncio
 from dotenv import load_dotenv
 import datetime as dt
 import pprint
+
+from wiki import find_page, get_summary
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -20,7 +22,7 @@ c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS trump
              (quote text)''')
 c.execute('''CREATE TABLE IF NOT EXISTS members
-             (username TEXT UNIQUE, channels TEXT, infractions INTEGER)''')
+             (user_id INTEGER UNIQUE, channels TEXT, infractions INTEGER)''')
 
 conn.commit()
 
@@ -86,9 +88,9 @@ async def on_ready():
         async for member in guild.fetch_members():
             # change to execute_many with ? syntax
             c.execute("""
-                INSERT OR IGNORE INTO members(username, channels, infractions)
+                INSERT OR IGNORE INTO members(user_id, channels, infractions)
                 VALUES('{0}', '{1}', {2})
-            """.format(str(member), "[]", 0))
+            """.format(member.id, "[]", 0))
         
         conn.commit()
             
@@ -230,7 +232,7 @@ async def on_message(message):
 
         embed.add_field(name="Joined", value=member.joined_at)
 
-        c.execute("SELECT * FROM members WHERE username='{0}'".format(str(member)))
+        c.execute("SELECT * FROM members WHERE user_id='{0}'".format(member.id))
         # TODO: handle not exists
         member_data = c.fetchone()
 
@@ -257,9 +259,145 @@ async def on_message(message):
         embed.add_field(name="Roles", value=roles)
 
         return await message.channel.send(embed=embed)
-        
-                     
 
+    if message.content.split(' ')[0] == "!set-owner":
+        if not is_moderator(message.guild, message.author):
+            response = "**Error: permission denied.**".format(member.mention)
+            return await message.channel.send(response)
+
+        msg_split = message.content.split(' ')
+        if len(msg_split) != 3:
+            response = "**Error: invalid usage of !set-owner.**"
+            return await message.channel.send(response)
+        if not (len(message.mentions) == len(message.channel_mentions) == 1):
+            response = "**Error: invalid usage of !set-owner.**"
+            return await message.channel.send(response)
+        
+        channel = message.channel_mentions[0]
+        member = message.mentions[0]
+
+        c.execute("SELECT * FROM members")
+        # TODO: handle not exists
+        data = list(c.fetchall())
+
+        for i in range(len(data)):
+            data[i] = list(data[i])
+            data[i][1] = json.loads(data[i][1])
+        
+        for entry in data:
+            if channel.id in entry[1]:
+                if entry[0] == member.id:
+                    response = "**Error: user {0} already owns channel {1}.**".format(member.mention, channel.mention)
+                    return await message.channel.send(response)
+                else:
+                    insertion = entry[1]
+                    insertion.pop(insertion.index(channel.id))
+                    insertion = json.dumps(insertion)
+
+                    query = "UPDATE members SET channels='{1}' WHERE user_id='{0}'"
+                    query = query.format(entry[0], insertion)
+                    c.execute(query)
+
+                    break
+        
+        record = None
+        for entry in data:
+            if entry[0] == member.id:
+                record = entry
+        
+        record[1].append(channel.id)
+        insertion = json.dumps(record[1])
+
+        query = query = "UPDATE members SET channels='{1}' WHERE user_id='{0}'"
+        query = query.format(record[0], insertion)
+        c.execute(query)
+
+        conn.commit()
+
+        description = "Channel {0} is now owned by {1}".format(channel.mention, member.mention)
+
+        embed = Embed(
+            title="Set Channel Owner", 
+            description=description, color=COLORS["mod-positive"], 
+            timestamp=dt.datetime.now()
+        ).set_author(name=str(message.author), icon_url=str(message.author.avatar_url))
+
+        return await message.channel.send(embed=embed)
+
+    if message.content.split(' ')[0] == "!remove-owner":
+        if not is_moderator(message.guild, message.author):
+            response = "**Error: permission denied.**".format(member.mention)
+            return await message.channel.send(response)
+
+        msg_split = message.content.split(' ')
+        if len(msg_split) != 2:
+            response = "**Error: invalid usage of !set-owner.**"
+            return await message.channel.send(response)
+        if len(message.channel_mentions) != 1:
+            response = "**Error: invalid usage of !set-owner.**"
+            return await message.channel.send(response)
+        
+        channel = message.channel_mentions[0]
+
+        c.execute("SELECT * FROM members")
+        # TODO: handle not exists
+        data = c.fetchall()
+
+        record = None
+        for entry in data:
+            channel_ids = json.loads(entry[1])
+            if channel.id in channel_ids:
+                record = list(entry)
+                record[1] = channel_ids
+                break
+        
+        if record is None:
+            response = "**Error: channel {0} does not have an owner.**".format(channel.id)
+            return await message.channel.send(response)
+
+        record[1].pop(record[1].index(channel.id))
+        record[1] = json.dumps(record[1])
+        
+        query = "UPDATE members SET channels='{0}' WHERE user_id='{1}'"
+        query = query.format(record[1], record[0])
+        c.execute(query)
+
+        conn.commit()
+
+        member = await message.guild.fetch_member(record[0])
+        description = "Channel {0} is no longer owned by {1}".format(channel.mention, member.mention)
+
+        embed = Embed(
+            title="Removed Channel Owner", 
+            description=description, color=COLORS["mod-negative"], 
+            timestamp=dt.datetime.now()
+        ).set_author(name=str(message.author), icon_url=str(message.author.avatar_url))
+
+        return await message.channel.send(embed=embed)
+
+    if message.content.split(' ')[0] == "!wiki":
+        search_str = message.content.split(' ')[1:]
+        search_str = " ".join(search_str)
+
+        page = find_page(search_str)
+        if page is None:
+            response = "**Page not found**"
+            return await message.channel.send(response)
+
+        title = page["title"]
+        summary = get_summary(page)
+        
+        icon_url = "http://keith-discord.herokuapp.com/wiki.png"
+
+        embed = Embed(
+            title=title, description=summary["extract"], 
+            color=COLORS["mod-neutral"], timestamp=dt.datetime.now()
+        ).set_author(name=str(message.author), icon_url=icon_url)
+
+        embed.set_thumbnail(url=summary["thumbnail"])
+        
+        return await message.channel.send(embed=embed)
+          
     if message.content.split(' ')[0] == "!choi":
         if not message.content.rstrip() == "!choi":
             response = "**Error: !choi does not take arguments**"
