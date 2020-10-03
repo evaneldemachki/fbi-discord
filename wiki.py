@@ -37,5 +37,7 @@ def get_summary(page):
 
     if "thumbnail" in content:
         summary["thumbnail"] = content["thumbnail"]["source"]
+    else:
+        summary["thumbnail"] = None
 
     return summary
