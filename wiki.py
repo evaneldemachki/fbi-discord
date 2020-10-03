@@ -33,7 +33,7 @@ def get_summary(page):
 
     summary = {
         "extract": content["extract"],
-        "url": ["content_urls"]["desktop"]["page"]
+        "url": content["content_urls"]["desktop"]["page"]
     }
 
     if "thumbnail" in content:
