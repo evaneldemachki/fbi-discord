@@ -32,7 +32,8 @@ def get_summary(page):
     content = json.loads(content)
 
     summary = {
-        "extract": content["extract"]
+        "extract": content["extract"],
+        "url": ["content_urls"]["desktop"]["page"]
     }
 
     if "thumbnail" in content:
