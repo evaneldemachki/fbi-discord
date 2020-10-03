@@ -392,7 +392,7 @@ async def on_message(message):
         embed = Embed(
             title=title, description=summary["extract"], 
             color=COLORS["mod-neutral"], timestamp=dt.datetime.now()
-        ).set_author(name=str(message.author))#, icon_url=icon_url)
+        ).set_author(name=str(message.author), icon_url=icon_url)
 
         embed.set_thumbnail(url=summary["thumbnail"])
         
