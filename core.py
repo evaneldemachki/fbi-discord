@@ -10,6 +10,7 @@ import asyncio
 from dotenv import load_dotenv
 import datetime as dt
 import pprint
+from level import register_message
 
 from wiki import find_page, get_summary
 
@@ -21,8 +22,17 @@ c = conn.cursor()
 # Create tables
 c.execute('''CREATE TABLE IF NOT EXISTS trump
              (quote text)''')
-c.execute('''CREATE TABLE IF NOT EXISTS members
-             (user_id INTEGER UNIQUE, channels TEXT, infractions INTEGER)''')
+c.execute(
+    '''
+    CREATE TABLE IF NOT EXISTS members
+    (user_id INTEGER,
+    channels TEXT, 
+    infractions INTEGER,
+    xp INTEGER, 
+    guild_id INTEGER,
+    UNIQUE(user_id, guild_id))
+    '''
+)
 
 conn.commit()
 
@@ -43,54 +53,65 @@ async def unmute(channel, member, role):
     await channel.send("{0} is no longer choi'd".format(member.mention))
 
 def is_moderator(guild, member):
-    mod_role = GUILDS[guild]["roles"]["moderator"]
+    mod_role = GUILDS[guild]["roles"]["Moderator"]
     if member.top_role >= mod_role or member == client.user:
         return True
     
     return False
 
 def is_muted(guild, member):
-    muted_role = GUILDS[guild]["roles"]["muted"]
+    muted_role = GUILDS[guild]["roles"]["Muted"]
     if muted_role in member.roles:
         return True
     
     return False
     
-
 @client.event
 async def on_ready():
     global GUILDS
 
     for guild in client.guilds:
-        mod_role = muted_role = None
+        guild_id = guild.id
+        
+        roles = {
+            "Admin": None,
+            "Moderator": None,
+            "Muted": None,
+            "Legend": None,
+            "Elder": None,
+            "Elite": None,
+            "Citizen": None,
+            "Newcomer": None,
+            "Bot": None
+        }
 
+        valid = False
         for role in await guild.fetch_roles():
-            if str(role) == "Moderator":
-                mod_role = role
-            elif str(role) == "Muted":
-                muted_role = role
+            if str(role) in roles:
+                roles[str(role)] = role
             else:
                 continue
 
-            if mod_role is not None and muted_role is not None:
+            if all(roles[key] is not None for key in roles):
+                valid = True
                 break
 
-        if mod_role is None or muted_role is None:
-            raise KeyError("Guild '{0}' not configured".format(str(guild)))
+        if not valid:
+            raise KeyError("Guild '{0}' not properly configured".format(str(guild)))
 
         GUILDS[guild] = {
-            "roles": {
-                "moderator": mod_role,
-                "muted": muted_role
-            }
+            "roles": roles
         }
-
+    
+        bot_role = GUILDS[guild]["roles"]["Bot"]
         async for member in guild.fetch_members():
-            # change to execute_many with ? syntax
-            c.execute("""
-                INSERT OR IGNORE INTO members(user_id, channels, infractions)
-                VALUES('{0}', '{1}', {2})
-            """.format(member.id, "[]", 0))
+            if bot_role not in member.roles:
+                # change to execute_many with ? syntax
+                c.execute("""
+                    INSERT OR IGNORE INTO members
+                    (user_id, guild_id, channels, xp, infractions)
+                    VALUES({0}, {1}, '{2}', {3}, {4})
+                """.format(member.id, guild.id, "[]", 0, 0))
         
         conn.commit()
             
@@ -102,6 +123,11 @@ async def on_message(message):
     if message.author == client.user:
         return
     
+    bot_role = GUILDS[message.guild]["roles"]["Bot"]
+    if bot_role not in message.author.roles:
+        register_message(conn, c, message)
+
+
     if message.content.split(' ')[0] == "!mute":
         if not is_moderator(message.guild, message.author):
             response = "**Error**: permission denied.".format(member.mention)
@@ -124,7 +150,7 @@ async def on_message(message):
             response = "**Error: no users specified.**"
             return await message.channel.send(response)
         
-        muted_role = GUILDS[message.guild]["roles"]["muted"]
+        muted_role = GUILDS[message.guild]["roles"]["Muted"]
         for member in members:
             await member.add_roles(muted_role)
 
@@ -164,7 +190,7 @@ async def on_message(message):
             response = "**Error: no users specified.**"
             return await message.channel.send(response)
         
-        muted_role = GUILDS[message.guild]["roles"]["muted"]
+        muted_role = GUILDS[message.guild]["roles"]["Muted"]
         for member in members:
             await member.remove_roles(muted_role)
 
@@ -232,7 +258,9 @@ async def on_message(message):
 
         embed.add_field(name="Joined", value=member.joined_at)
 
-        c.execute("SELECT * FROM members WHERE user_id='{0}'".format(member.id))
+        query = "SELECT * FROM members WHERE user_id={0} AND guild_id={1}"
+        query = query.format(member.id, message.guild.id)
+        c.execute(query)
         # TODO: handle not exists
         member_data = c.fetchone()
 
@@ -276,7 +304,9 @@ async def on_message(message):
         channel = message.channel_mentions[0]
         member = message.mentions[0]
 
-        c.execute("SELECT * FROM members")
+        query = "SELECT * FROM members WHERE guild_id={0}"
+        query = query.format(message.guild.id)
+        c.execute(query)
         # TODO: handle not exists
         data = list(c.fetchall())
 
@@ -308,8 +338,8 @@ async def on_message(message):
         record[1].append(channel.id)
         insertion = json.dumps(record[1])
 
-        query = query = "UPDATE members SET channels='{1}' WHERE user_id='{0}'"
-        query = query.format(record[0], insertion)
+        query = query = "UPDATE members SET channels='{0}' WHERE user_id={1} AND guild_id={2}"
+        query = query.format(insertion, record[0], message.guild.id)
         c.execute(query)
 
         conn.commit()
@@ -339,7 +369,9 @@ async def on_message(message):
         
         channel = message.channel_mentions[0]
 
-        c.execute("SELECT * FROM members")
+        query = "SELECT * FROM members WHERE guild_id={0}"
+        query = query.format(message.guild.id)
+        c.execute(query)
         # TODO: handle not exists
         data = c.fetchall()
 
@@ -358,8 +390,8 @@ async def on_message(message):
         record[1].pop(record[1].index(channel.id))
         record[1] = json.dumps(record[1])
         
-        query = "UPDATE members SET channels='{0}' WHERE user_id='{1}'"
-        query = query.format(record[1], record[0])
+        query = "UPDATE members SET channels='{0}' WHERE user_id={1} AND guild_id={2}"
+        query = query.format(record[1], record[0], message.guild.id)
         c.execute(query)
 
         conn.commit()
@@ -387,7 +419,7 @@ async def on_message(message):
         title = page["title"]
         summary = get_summary(page)
         
-        icon_url = "http://keith-discord.herokuapp.com/static/wiki.png"
+        icon_url = "https://i.ibb.co/ZWqwGZx/wiki.png"
 
         embed = Embed(
             title=title, description=summary["extract"], 
@@ -413,7 +445,7 @@ async def on_message(message):
             if not is_moderator(message.guild, member):
                 members.append(member)
 
-        role = GUILDS[message.guild]["roles"]["muted"]
+        role = GUILDS[message.guild]["roles"]["Muted"]
         member = random.choice(members)
         await member.add_roles(role)
 
