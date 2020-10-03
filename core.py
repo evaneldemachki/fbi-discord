@@ -387,14 +387,15 @@ async def on_message(message):
         title = page["title"]
         summary = get_summary(page)
         
-        #icon_url = "http://keith-discord.herokuapp.com/wiki.png"
+        icon_url = "http://keith-discord.herokuapp.com/wiki.png"
 
         embed = Embed(
             title=title, description=summary["extract"], 
             color=COLORS["mod-neutral"], timestamp=dt.datetime.now()
         ).set_author(name=str(message.author), icon_url=icon_url)
 
-        embed.set_thumbnail(url=summary["thumbnail"])
+        if summary["thumbnail"] is not None:
+            embed.set_thumbnail(url=summary["thumbnail"])
         
         return await message.channel.send(embed=embed)
           

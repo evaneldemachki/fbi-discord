@@ -32,8 +32,10 @@ def get_summary(page):
     content = json.loads(content)
 
     summary = {
-        "thumbnail": content["thumbnail"]["source"],
         "extract": content["extract"]
     }
+
+    if "thumbnail" in content:
+        summary["thumbnail"] = content["thumbnail"]["source"]
 
     return summary
