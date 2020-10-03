@@ -2,7 +2,7 @@ import os
 import random
 import json
 import discord
-from discord import Embed, Image
+from discord import Embed
 from discord.ext.commands import Bot
 import sqlite3
 import re
@@ -387,12 +387,12 @@ async def on_message(message):
         title = page["title"]
         summary = get_summary(page)
         
-        icon_url = "http://keith-discord.herokuapp.com/wiki.png"
+        #icon_url = "http://keith-discord.herokuapp.com/wiki.png"
 
         embed = Embed(
             title=title, description=summary["extract"], 
             color=COLORS["mod-neutral"], timestamp=dt.datetime.now()
-        ).set_author(name=str(message.author), icon_url=icon_url)
+        ).set_author(name=str(message.author))#, icon_url=icon_url)
 
         embed.set_thumbnail(url=summary["thumbnail"])
         
