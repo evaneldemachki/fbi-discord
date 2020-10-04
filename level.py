@@ -62,6 +62,7 @@ class Leveler:
         self.c.execute(query)
         xp = self.c.fetchone()[0]
         pos = level_pos(xp)
+
         promotion = None
         pos_plus = level_pos(xp+10)
         if pos_plus > pos:
@@ -87,6 +88,10 @@ class Leveler:
             channel = self.GUILDS[guild]["channels"]["general"]
             await channel.send(embed=embed)
 
+            if promotion not in [5, 10, 15, 20]:
+                return
+
+            # TODO: fix this mess
             rank_up = None
             current_ranks = []
             rank_keys = list(self.GUILDS[guild]["ranks"].keys())
@@ -95,9 +100,6 @@ class Leveler:
                 if promotion >= rank["level"]:
                     rank_up = rank
                     current_ranks.append(self.GUILDS[guild]["ranks"][rank_keys[i-1]]["role"])
-            
-            if rank_up is None:
-                return
 
             await member.add_roles(rank_up["role"])
             await member.remove_roles(*current_ranks)
@@ -113,6 +115,3 @@ class Leveler:
 
             channel = self.GUILDS[guild]["channels"]["general"]
             return await channel.send(embed=embed)
-
-
-# TODO: count all messages from history to create rank_index
