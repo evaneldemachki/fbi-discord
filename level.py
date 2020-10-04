@@ -21,6 +21,7 @@ def level_pos(xp):
     return pos
 
 RANKS = rank_gen(1.5)
+print(RANKS)
 
 class Leveler:
     def __init__(self, conn, c, GUILDS):

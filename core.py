@@ -15,10 +15,17 @@ from collections import OrderedDict
 
 from wiki import find_page, get_summary
 
+try:
+    DB = os.environ["database"]
+except:
+    DB = "local.db"
+
+print("using database: {0}".format(db))
+
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-conn = sqlite3.connect('core.db')
+conn = sqlite3.connect(DB)
 c = conn.cursor()
 # Create tables
 c.execute('''CREATE TABLE IF NOT EXISTS trump
