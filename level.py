@@ -21,6 +21,7 @@ def level_pos(xp):
     return pos
 
 RANKS = rank_gen(1.5)
+print("RANKS")
 print(RANKS)
 
 class Leveler:
