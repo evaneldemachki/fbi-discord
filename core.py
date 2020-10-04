@@ -332,6 +332,7 @@ async def on_message(message):
 
         msg_split = message.content.split(' ')
         if len(msg_split) != 3:
+            ".."
             response = "**Error: invalid usage of !set-owner.**"
             return await message.channel.send(response)
         if not (len(message.mentions) == len(message.channel_mentions) == 1):
