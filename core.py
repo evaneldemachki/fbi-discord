@@ -30,11 +30,11 @@ create table if not exists trump (quote text null)
 ''')
 c.execute('''
 create table if not exists members (
-    user_id int null,
+    user_id bigint null,
     channels text null,
     infractions int null,
-    xp int null,
-    guild_id int null,
+    xp bigint null,
+    guild_id bigint null,
     unique (
         user_id,
         guild_id
