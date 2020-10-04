@@ -61,12 +61,12 @@ class Leveler:
 
         self.c.execute(query)
         xp = self.c.fetchone()[0]
-        pos = level_pos(xp)
+        pos = level_pos(xp) + 1
 
         promotion = None
-        pos_plus = level_pos(xp+10)
+        pos_plus = level_pos(xp+10) + 1
         if pos_plus > pos:
-            promotion = pos_plus + 1
+            promotion = pos_plus
         
         query = """update MEMBERS set XP = (XP + 10)
         where (USER_ID = {0} and GUILD_ID = {1})"""
@@ -77,7 +77,7 @@ class Leveler:
 
         if promotion is not None:
             description = "**{0} has reached level {1}!**"
-            description = description.format(member.mention, pos_plus)
+            description = description.format(member.mention, promotion)
             embed = Embed(
                 title="Level Up!", 
                 description=description, color=15105570, 
