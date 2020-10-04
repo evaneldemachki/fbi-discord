@@ -10,16 +10,16 @@ class Cursor:
     
     def execute(self, query):
         try:
-            return self.cursor.execute(query)
+            self.cursor.execute(query)
         except:
             self.conn = psycopg2.connect(DATABASE_URL, sslmode='require')
             self.cursor = Cursor(self.conn)
-            return self.cursor.execute(query)
+            self.cursor.execute(query)
         
-    def fetchone():
+    def fetchone(self):
         return self.cursor.fetchone()
     
-    def fetchall():
+    def fetchall(self):
         return self.cursor.fetchall()
 
 class Connection:
