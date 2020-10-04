@@ -76,6 +76,9 @@ def is_muted(guild, member):
 
 @client.event
 async def on_member_join(member):
+    if member.bot:
+        return
+
     query = """
     INSERT INTO members (user_id, guild_id, channels, xp, infractions)
     VALUES({0}, {1}, '{2}', {3}, {4})
@@ -144,9 +147,9 @@ async def on_ready():
             "channels": channels
         }
     
-        bot_role = GUILDS[guild]["roles"]["Bot"]
+        #bot_role = GUILDS[guild]["roles"]["Bot"]
         async for member in guild.fetch_members():
-            if bot_role not in member.roles:
+            if not member.bot:
                 # change to execute_many with ? syntax
                 query = """
                 INSERT INTO members (user_id, guild_id, channels, xp, infractions)
@@ -167,8 +170,8 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    bot_role = GUILDS[message.guild]["roles"]["Bot"]
-    if bot_role not in message.author.roles:
+    #bot_role = GUILDS[message.guild]["roles"]["Bot"]
+    if not message.author.bot:
         await LEVELER.register_message(message)
 
     if message.content.split(' ')[0] == "!mute":
