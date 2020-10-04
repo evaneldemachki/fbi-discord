@@ -34,7 +34,8 @@ class Leveler:
         query = """select XP from MEMBERS where (USER_ID = {0} and GUILD_ID = {1})"""
         query = query.format(member.id, guild.id)
 
-        xp = self.c.execute(query).fetchone()[0]
+        self.c.execute(query)
+        xp = self.c.fetchone()[0]
         level = level_pos(xp) + 1
 
         return level
@@ -44,7 +45,8 @@ class Leveler:
         query = """select XP from MEMBERS where (USER_ID = {0} and GUILD_ID = {1})"""
         query = query.format(member.id, guild.id)
 
-        xp = self.c.execute(query).fetchone()[0]
+        self.c.execute(query)
+        xp = self.c.fetchone()[0]
         pos = level_pos(xp+10) + 1
         next_xp = RANKS[pos]
 
@@ -57,7 +59,8 @@ class Leveler:
         query = """select XP from MEMBERS where (USER_ID = {0} and GUILD_ID = {1})"""
         query = query.format(member.id, guild.id)
 
-        xp = self.c.execute(query).fetchone()[0]
+        self.c.execute(query)
+        xp = self.c.fetchone()[0]
         pos = level_pos(xp)
         promotion = None
         pos_plus = level_pos(xp+10)
