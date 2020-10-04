@@ -15,6 +15,7 @@ def rank_gen(factor):
 def level_pos(xp):
     pos = None
     for i in range(len(RANKS)):
+        print(xp)
         if xp >= RANKS[i]:
             pos = i
     
