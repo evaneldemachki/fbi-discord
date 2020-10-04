@@ -20,7 +20,7 @@ try:
 except:
     DB = "local.db"
 
-print("using database: {0}".format(db))
+print("using database: {0}".format(DB))
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
