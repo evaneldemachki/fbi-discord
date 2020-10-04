@@ -25,19 +25,22 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 c = conn.cursor()
 # Create tables
-c.execute('''CREATE TABLE IF NOT EXISTS trump
-             (quote text)''')
-c.execute(
-    '''
-    CREATE TABLE IF NOT EXISTS members
-    (user_id INTEGER,
-    channels TEXT, 
-    infractions INTEGER,
-    xp INTEGER, 
-    guild_id INTEGER,
-    UNIQUE(user_id, guild_id))
-    '''
+c.execute('''
+create table if not exists trump (quote text null)
+''')
+c.execute('''
+create table if not exists members (
+    user_id int null,
+    channels text null,
+    infractions int null,
+    xp int null,
+    guild_id int null,
+    unique (
+        user_id,
+        guild_id
+    )
 )
+''')
 
 conn.commit()
 
@@ -134,11 +137,11 @@ async def on_ready():
         async for member in guild.fetch_members():
             if bot_role not in member.roles:
                 # change to execute_many with ? syntax
-                c.execute("""
-                    INSERT OR IGNORE INTO members
-                    (user_id, guild_id, channels, xp, infractions)
-                    VALUES({0}, {1}, '{2}', {3}, {4})
-                """.format(member.id, guild.id, "[]", 0, 0))
+                query = """
+                INSERT INTO members (user_id, guild_id, channels, xp, infractions)
+                VALUES({0}, {1}, '{2}', {3}, {4})
+                ON CONFLICT DO NOTHING
+                """.format(member.id, guild.id, "[]", 0, 0)
         
         conn.commit()
 
@@ -291,7 +294,7 @@ async def on_message(message):
         level_str = "XP: ({0}/{1})".format(xp, next_xp)
         embed.add_field(name=level_title, value=level_str)
 
-        query = "SELECT * FROM members WHERE user_id={0} AND guild_id={1}"
+        query = """select * from MEMBERS where (USER_ID = {0} and GUILD_ID = {1})"""
         query = query.format(member.id, message.guild.id)
         c.execute(query)
         # TODO: handle not exists
@@ -339,7 +342,7 @@ async def on_message(message):
         channel = message.channel_mentions[0]
         member = message.mentions[0]
 
-        query = "SELECT * FROM members WHERE guild_id={0}"
+        query = """select * from MEMBERS where GUILD_ID = {0}"""
         query = query.format(message.guild.id)
         c.execute(query)
         # TODO: handle not exists
@@ -373,7 +376,9 @@ async def on_message(message):
         record[1].append(channel.id)
         insertion = json.dumps(record[1])
 
-        query = query = "UPDATE members SET channels='{0}' WHERE user_id={1} AND guild_id={2}"
+        query = """
+        update MEMBERS set CHANNELS = '{0}' where 
+        (USER_ID = {1} and GUILD_ID = {2})"""
         query = query.format(insertion, record[0], message.guild.id)
         c.execute(query)
 
@@ -404,7 +409,7 @@ async def on_message(message):
         
         channel = message.channel_mentions[0]
 
-        query = "SELECT * FROM members WHERE guild_id={0}"
+        query = """select * from MEMBERS where GUILD_ID = {0}"""
         query = query.format(message.guild.id)
         c.execute(query)
         # TODO: handle not exists
@@ -425,7 +430,8 @@ async def on_message(message):
         record[1].pop(record[1].index(channel.id))
         record[1] = json.dumps(record[1])
         
-        query = "UPDATE members SET channels='{0}' WHERE user_id={1} AND guild_id={2}"
+        query = """update MEMBERS set CHANNELS = '{0}'
+        where (USER_ID = {1} and GUILD_ID = {2})"""
         query = query.format(record[1], record[0], message.guild.id)
         c.execute(query)
 
