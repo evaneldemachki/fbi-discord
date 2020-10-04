@@ -162,7 +162,7 @@ async def on_message(message):
 
     if message.content.split(' ')[0] == "!mute":
         if not is_moderator(message.guild, message.author):
-            response = "**Error**: permission denied.".format(member.mention)
+            response = "**Error**: permission denied."
             return await message.channel.send(response)
 
         members = []
