@@ -142,6 +142,7 @@ async def on_ready():
                 VALUES({0}, {1}, '{2}', {3}, {4})
                 ON CONFLICT DO NOTHING
                 """.format(member.id, guild.id, "[]", 0, 0)
+                c.execute(query)
         
         conn.commit()
 
