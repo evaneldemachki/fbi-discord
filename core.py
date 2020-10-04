@@ -20,8 +20,6 @@ DATABASE_URL = os.environ['DATABASE_URL']
 
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
-print("using database: {0}".format(DB))
-
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
