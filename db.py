@@ -26,6 +26,6 @@ class Connection:
     def __init__(self):
         self.conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         self.cursor = Cursor(self.conn)
-    
+
     def commit(self):
         self.conn.commit()

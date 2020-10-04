@@ -10,6 +10,7 @@ import datetime as dt
 import pprint
 from level import Leveler
 from db import Connection
+import requests
 
 from collections import OrderedDict
 
@@ -492,7 +493,23 @@ async def on_message(message):
         await message.channel.send(response)
 
         await unmute(message.channel, member, role)
-        
+    
+    if message.content.split(' ')[0] == "!joke":
+        if not message.content.rstrip() == "!joke":
+            response = "**Error: !joke does not take arguments**"
+            return await message.channel.send(response)
+
+        url = "https://sv443.net/jokeapi/v2/joke/Dark?type=twopart"
+        content = json.loads(requests.get(url).content)
+
+        setup = content["setup"]
+        delivery = content["delivery"]
+
+        await message.channel.send(setup)
+        await asyncio.sleep(5)
+        await message.channel.send(delivery)
+        return
+
     if message.content.split(' ')[0] == "!trump":
         if not message.content.rstrip() == "!trump":
             response = "**Error: !trump does not take arguments**"
