@@ -9,21 +9,18 @@ from dotenv import load_dotenv
 import datetime as dt
 import pprint
 from level import Leveler
+from db import Connection
 
 from collections import OrderedDict
 
 from wiki import find_page, get_summary
 
-import psycopg2
-
-DATABASE_URL = os.environ['DATABASE_URL']
-
-conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
+conn = Connection()
 c = conn.cursor()
+
 # Create tables
 c.execute('''
 create table if not exists trump (quote text null)
