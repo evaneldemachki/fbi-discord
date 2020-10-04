@@ -3,7 +3,6 @@ import random
 import json
 import discord
 from discord import Embed
-import sqlite3
 import re
 import asyncio
 from dotenv import load_dotenv
@@ -15,17 +14,17 @@ from collections import OrderedDict
 
 from wiki import find_page, get_summary
 
-try:
-    DB = os.environ["database"]
-except:
-    DB = "local.db"
+import psycopg2
+
+DATABASE_URL = os.environ['DATABASE_URL']
+
+conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
 print("using database: {0}".format(DB))
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-conn = sqlite3.connect(DB)
 c = conn.cursor()
 # Create tables
 c.execute('''CREATE TABLE IF NOT EXISTS trump
