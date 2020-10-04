@@ -73,6 +73,19 @@ def is_muted(guild, member):
         return True
     
     return False
+
+@client.event
+async def on_member_join(member):
+    query = """
+    INSERT INTO members (user_id, guild_id, channels, xp, infractions)
+    VALUES({0}, {1}, '{2}', {3}, {4})
+    ON CONFLICT DO NOTHING
+    """.format(member.id, member.guild.id, "[]", 0, 0)
+
+    c.execute(query)
+    conn.commit()
+
+    return await member.add_roles(GUILDS[member.guild]["ranks"]["Newcomer"]["role"])  
     
 @client.event
 async def on_ready():
