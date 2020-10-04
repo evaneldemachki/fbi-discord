@@ -3,14 +3,15 @@ import random
 import json
 import discord
 from discord import Embed
-from discord.ext.commands import Bot
 import sqlite3
 import re
 import asyncio
 from dotenv import load_dotenv
 import datetime as dt
 import pprint
-from level import register_message
+from level import Leveler
+
+from collections import OrderedDict
 
 from wiki import find_page, get_summary
 
@@ -43,7 +44,9 @@ COLORS = {
     "mod-neutral": 7506394,   # blue
     "profile-card": 15105570  # orange
 }
-IGNORE = ["@everyone", "Muted"]
+IGNORE_ROLES = ["@everyone", "Muted"]
+IGNORE_CHANNELS = []
+LEVELER = None
 
 client = discord.Client()
 
@@ -69,6 +72,7 @@ def is_muted(guild, member):
 @client.event
 async def on_ready():
     global GUILDS
+    global LEVELER
 
     for guild in client.guilds:
         guild_id = guild.id
@@ -77,30 +81,49 @@ async def on_ready():
             "Admin": None,
             "Moderator": None,
             "Muted": None,
-            "Legend": None,
-            "Elder": None,
-            "Elite": None,
-            "Citizen": None,
-            "Newcomer": None,
             "Bot": None
+        }
+        ranks = OrderedDict([
+            ("Newcomer", {"level": 1, "role": None}),
+            ("Citizen", {"level": 5, "role": None}),
+            ("Elite", {"level": 10, "role": None}),
+            ("Elder", {"level": 15, "role": None}),
+            ("Legend", {"level": 20, "role": None})
+        ])
+        channels = {
+            "general": None
         }
 
         valid = False
         for role in await guild.fetch_roles():
             if str(role) in roles:
                 roles[str(role)] = role
+            if str(role) in list(ranks.keys()):
+                ranks[str(role)]["role"] = role
             else:
                 continue
 
-            if all(roles[key] is not None for key in roles):
+            roles_valid = all([roles[key] is not None for key in roles])
+            ranks_valid = all([ranks[key]["role"] is not None for key in ranks])
+            if roles_valid and ranks_valid:
                 valid = True
                 break
 
         if not valid:
             raise KeyError("Guild '{0}' not properly configured".format(str(guild)))
 
+        for channel in await guild.fetch_channels():
+            if str(channel) == "general":
+                channels["general"] = channel
+                break
+        
+        if channels["general"] is None:
+            raise KeyError("Guild '{0}' not properly configured".format(str(guild)))
+        
         GUILDS[guild] = {
-            "roles": roles
+            "roles": roles,
+            "ranks": ranks,
+            "channels": channels
         }
     
         bot_role = GUILDS[guild]["roles"]["Bot"]
@@ -114,6 +137,8 @@ async def on_ready():
                 """.format(member.id, guild.id, "[]", 0, 0))
         
         conn.commit()
+
+    LEVELER = Leveler(conn, c, GUILDS)
             
     print(f'{client.user} has connected to Discord!')
     print(GUILDS)
@@ -122,11 +147,10 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
-    
+
     bot_role = GUILDS[message.guild]["roles"]["Bot"]
     if bot_role not in message.author.roles:
-        register_message(conn, c, message)
-
+        await LEVELER.register_message(message)
 
     if message.content.split(' ')[0] == "!mute":
         if not is_moderator(message.guild, message.author):
@@ -253,10 +277,15 @@ async def on_message(message):
         
         embed = Embed(
             title=member.nick,
-            color=COLORS["profile-card"], timestamp=dt.datetime.now()
+            color=COLORS["profile-card"]
         ).set_thumbnail(url=member.avatar_url).set_author(name=member)
 
-        embed.add_field(name="Joined", value=member.joined_at)
+        embed.set_footer(text="Joined: {0}".format(member.joined_at).split(' ')[0])
+
+        xp, next_xp = LEVELER.get_xp_range(message.guild, member)
+        level_title = "Level" + " " + str(LEVELER.get_level(message.guild, member))
+        level_str = "XP: ({0}/{1})".format(xp, next_xp)
+        embed.add_field(name=level_title, value=level_str)
 
         query = "SELECT * FROM members WHERE user_id={0} AND guild_id={1}"
         query = query.format(member.id, message.guild.id)
@@ -274,17 +303,18 @@ async def on_message(message):
         else:
             channels = "*No channels yet*"
         
-        embed.add_field(name="Channels", value=channels)
+        embed.add_field(name="Channels", value=channels, inline=False)
 
         infractions = member_data[2]
 
         roles = []
         for role in member.roles:
-            if str(role) not in IGNORE:
+            if str(role) not in IGNORE_ROLES:
                 roles.append("  -  {0}".format(role.mention))
 
         roles = "\n".join(reversed(roles))
-        embed.add_field(name="Roles", value=roles)
+
+        embed.add_field(name="Roles", value=roles, inline=True)
 
         return await message.channel.send(embed=embed)
 
