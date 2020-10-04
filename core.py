@@ -280,7 +280,7 @@ async def on_message(message):
             color=COLORS["profile-card"]
         ).set_thumbnail(url=member.avatar_url).set_author(name=member)
 
-        embed.set_footer(text="Joined: {0}".format(member.joined_at.split(' ')[0]))
+        embed.set_footer(text="Joined: {0}".format(str(member.joined_at).split(' ')[0]))
 
         xp, next_xp = LEVELER.get_xp_range(message.guild, member)
         level_title = "Level" + " " + str(LEVELER.get_level(message.guild, member))
