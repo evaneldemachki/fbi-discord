@@ -19,7 +19,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 conn = Connection()
-c = conn.cursor()
+c = conn.cursor
 
 # Create tables
 c.execute('''
