@@ -31,7 +31,7 @@ class Leveler:
         self.GUILDS = GUILDS
     
     def get_level(self, guild, member):
-        query = "SELECT xp FROM members WHERE user_id = {0} and guild_id = {1}"
+        query = """select XP from MEMBERS where (USER_ID = {0} and GUILD_ID = {1})"""
         query = query.format(member.id, guild.id)
 
         xp = self.c.execute(query).fetchone()[0]
@@ -41,7 +41,7 @@ class Leveler:
     
     #TODO: combine these functions
     def get_xp_range(self, guild, member):
-        query = "SELECT xp FROM members WHERE user_id = {0} and guild_id = {1}"
+        query = """select XP from MEMBERS where (USER_ID = {0} and GUILD_ID = {1})"""
         query = query.format(member.id, guild.id)
 
         xp = self.c.execute(query).fetchone()[0]
@@ -54,7 +54,7 @@ class Leveler:
         member = message.author
         guild = message.guild
 
-        query = "SELECT xp FROM members WHERE user_id = {0} and guild_id = {1}"
+        query = """select XP from MEMBERS where (USER_ID = {0} and GUILD_ID = {1})"""
         query = query.format(member.id, guild.id)
 
         xp = self.c.execute(query).fetchone()[0]
@@ -64,7 +64,8 @@ class Leveler:
         if pos_plus > pos:
             promotion = pos_plus + 1
         
-        query = "UPDATE members SET xp = xp + 10 WHERE user_id = {0} and guild_id = {1}"
+        query = """update MEMBERS set XP = (XP + 10)
+        where (USER_ID = {0} and GUILD_ID = {1})"""
         query = query.format(member.id, guild.id)
 
         self.c.execute(query)
