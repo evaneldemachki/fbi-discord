@@ -4,7 +4,7 @@ from discord import Embed
 
 def rank_gen(factor):
     x = [0]
-    c = 10
+    c = 50
     for i in range(0, 19):
         x.append(x[i] + c)
         c = c * factor
