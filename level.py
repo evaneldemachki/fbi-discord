@@ -85,7 +85,7 @@ class Leveler:
             )
             embed.set_author(name=member, icon_url=str(member.avatar_url))
 
-            channel = self.GUILDS[guild]["channels"]["general"]
+            channel = self.GUILDS[guild]["channels"]["feed"]
             await channel.send(embed=embed)
 
             if promotion not in [5, 10, 15, 20]:
@@ -113,5 +113,5 @@ class Leveler:
             )
             embed.set_author(name=member, icon_url=str(member.avatar_url))
 
-            channel = self.GUILDS[guild]["channels"]["general"]
+            channel = self.GUILDS[guild]["channels"]["feed"]
             return await channel.send(embed=embed)

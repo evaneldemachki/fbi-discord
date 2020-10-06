@@ -75,6 +75,7 @@ def is_muted(guild, member):
     
     return False
 
+# TODO: this doesn't work
 @client.event
 async def on_member_join(member):
     if member.bot:
@@ -113,7 +114,7 @@ async def on_ready():
             ("Legend", {"level": 20, "role": None})
         ])
         channels = {
-            "general": None
+            "feed": None
         }
 
         valid = False
@@ -135,11 +136,11 @@ async def on_ready():
             raise KeyError("Guild '{0}' not properly configured".format(str(guild)))
 
         for channel in await guild.fetch_channels():
-            if str(channel) == "general":
-                channels["general"] = channel
+            if channel.id == 762952918848503859:
+                channels["feed"] = channel
                 break
         
-        if channels["general"] is None:
+        if channels["feed"] is None:
             raise KeyError("Guild '{0}' not properly configured".format(str(guild)))
         
         GUILDS[guild] = {
@@ -162,7 +163,10 @@ async def on_ready():
         conn.commit()
 
     LEVELER = Leveler(conn, c, GUILDS)
-            
+
+    for guild in GUILDS:
+        await GUILDS[guild]["channels"]["feed"].send(f'{client.user} has connected to {str(guild)}')
+
     print(f'{client.user} has connected to Discord!')
     print(GUILDS)
 
