@@ -63,7 +63,8 @@ async def unmute(channel, member, role):
 
 def is_moderator(guild, member):
     mod_role = GUILDS[guild]["roles"]["Moderator"]
-    if member.top_role >= mod_role or member == client.user:
+    admin_role = GUILDS[guild]["roles"]["Admin"]
+    if member.top_role == mod_role or member.top_role == admin_role or member == client.user:
         return True
     
     return False
@@ -184,14 +185,17 @@ async def on_message(message):
     if message.content.split(' ')[0] == "!freeze": 
         if not is_moderator(message.guild, message.author):
             response = "**Error: permission denied.**"
-            return await message.channel.send(response)
-        
+            return await message.channel.send(response)      
+
         msg_split = message.content.split(' ')
         if len(msg_split) != 2 or len(message.mentions) != 1:
             response = "**Error: invalid usage of !freeze.**"
             return await message.channel.send(response)
 
-        member = message.mentions[0]          
+        member = message.mentions[0]
+        if message.author.top_role <= member.top_role:
+            response = "**Error: target rank is equal to or above your own.**"
+            return await message.channel.send(response)                      
         
         if member.id in FROZEN:
            response = "**{0} is already frozen**".format(member.mention)
@@ -220,6 +224,9 @@ async def on_message(message):
             return await message.channel.send(response)
 
         member = message.mentions[0]
+        if message.author.top_role <= member.top_role:
+            response = "**Error: target rank is equal to or above your own.**"
+            return await message.channel.send(response)
 
         if not member.id in FROZEN:
            response = "**{0} is not frozen**".format(member.mention)
@@ -244,10 +251,9 @@ async def on_message(message):
 
         members = []
         for member in message.mentions:
-            if is_moderator(message.guild, member):
-                response = "**Error: cannot perform action 'unmute' on user {0}.**".format(member.mention)
+            if message.author.top_role <= member.top_role:
+                response = "**Error: target rank is equal to or above your own.**"
                 return await message.channel.send(response)
-                members.append(member)
             else:
                 if is_muted(message.guild, member):
                     response = "**Error: user '{0}' is already muted.**".format(member.mention)
@@ -285,8 +291,8 @@ async def on_message(message):
 
         members = []
         for member in message.mentions:
-            if is_moderator(message.guild, member):
-                response = "**Error: cannot perform action 'unmute' on user {0}.**".format(member.mention)
+            if message.author.top_role <= member.top_role:
+                response = "**Error: target rank is equal to or above your own.**"
                 return await message.channel.send(response)
             else:
                 if not is_muted(message.guild, member):
