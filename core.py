@@ -223,7 +223,7 @@ async def on_message(message):
 
         FROZEN.pop(FROZEN.index(member.id))
 
-        description = "XP gain for has resumed".format(member.mention)
+        description = "XP gain for {0} has resumed".format(member.mention)
         embed = Embed(
             title="Thaw", 
             description=description, color=COLORS["mod-positive"], 
