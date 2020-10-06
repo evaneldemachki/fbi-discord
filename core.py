@@ -51,6 +51,7 @@ COLORS = {
 }
 IGNORE_ROLES = ["@everyone", "Muted"]
 IGNORE_CHANNELS = []
+FROZEN = []
 LEVELER = None
 
 client = discord.Client()
@@ -167,12 +168,70 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    global FROZEN_USERS
     if message.author == client.user:
         return
 
     #bot_role = GUILDS[message.guild]["roles"]["Bot"]
     if not message.author.bot:
-        await LEVELER.register_message(message)
+        if not message.author.id in FROZEN:
+            await LEVELER.register_message(message)
+    
+    if message.content.split(' ')[0] == "!freeze": 
+        if not is_moderator(message.guild, message.author):
+            response = "**Error: permission denied.**"
+            return await message.channel.send(response)
+        
+        msg_split = message.content.split(' ')
+        if len(msg_split) != 2 or len(message.mentions) != 1:
+            response = "**Error: invalid usage of !freeze.**"
+            return await message.channel.send(response)
+
+        member = message.mentions[0]          
+        
+        if member.id in FROZEN:
+           response = "**{0} is already frozen**".format(member.mention)
+           return await message.channel.send(response)    
+
+        FROZEN.append(member.id)
+
+        description = "XP gain for {0} is now frozen".format(member.mention)
+        embed = Embed(
+            title="Freeze", 
+            description=description, color=COLORS["mod-negative"], 
+            timestamp=dt.datetime.now()
+        )
+        embed.set_author(name=message.author, icon_url=str(message.author.avatar_url))
+
+        return await message.channel.send(embed=embed)
+    
+    if message.content.split(' ')[0] == "!thaw":
+        if not is_moderator(message.guild, message.author):
+            response = "**Error: permission denied.**"
+            return await message.channel.send(response)
+
+        msg_split = message.content.split(' ')
+        if len(msg_split) != 2 or len(message.mentions) != 1:
+            response = "**Error: invalid usage of !freeze.**"
+            return await message.channel.send(response)
+
+        member = message.mentions[0]
+
+        if not member.id in FROZEN:
+           response = "**{0} is not frozen**".format(member.mention)
+           return await message.channel.send(response)
+
+        FROZEN.pop(FROZEN.index(member.id))
+
+        description = "XP gain for has resumed".format(member.mention)
+        embed = Embed(
+            title="Thaw", 
+            description=description, color=COLORS["mod-positive"], 
+            timestamp=dt.datetime.now()
+        )
+        embed.set_author(name=message.author, icon_url=str(message.author.avatar_url))
+
+        return await message.channel.send(embed=embed)            
 
     if message.content.split(' ')[0] == "!mute":
         if not is_moderator(message.guild, message.author):
@@ -297,6 +356,9 @@ async def on_message(message):
 
             member = message.mentions[0]
         
+        if member.bot:
+            return
+            
         embed = Embed(
             title=member.nick,
             color=COLORS["profile-card"]
