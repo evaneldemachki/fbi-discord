@@ -64,7 +64,7 @@ async def unmute(channel, member, role):
 def is_moderator(guild, member):
     mod_role = GUILDS[guild]["roles"]["Moderator"]
     admin_role = GUILDS[guild]["roles"]["Admin"]
-    if mod_role in members.role or admin_role in member.roles or member == client.user:
+    if mod_role in member.roles or admin_role in member.roles or member == client.user:
         return True
     
     return False
