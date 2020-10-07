@@ -571,6 +571,7 @@ async def on_message(message):
         msg = msg[1:]
         index = None
         for i in range(len(msg)):
+            char = msg[i]
             if char == '"':
                 if index is None:
                     index = i
