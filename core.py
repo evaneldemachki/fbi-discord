@@ -209,7 +209,7 @@ async def on_message(message):
             await message.guild.kick(member)
         else:
             reason = ' '.join(msg_split)
-            await message.guild.kick(member, reason)
+            await message.guild.kick(member, reason=reason)
 
         embed = Embed(
             title="Kicked user {0}".format(member.mention), 
