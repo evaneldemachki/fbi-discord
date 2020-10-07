@@ -593,7 +593,7 @@ async def on_message(message):
                 response = "**Sorry, no titles found by that name**"
                 return await message.channel.send(response)
 
-            message.channel.send(embed=embed)
+            return await message.channel.send(embed=embed)
         else:
             try:
                 index = int(index)
@@ -610,7 +610,7 @@ async def on_message(message):
                 response = "**Error: invalid title**"
                 return await message.channel.send(response)
 
-            message.channel.send(embed=embed)                                   
+            return await message.channel.send(embed=embed)                                   
           
     if message.content.split(' ')[0] == "!choi":
         if not message.content.rstrip() == "!choi":
