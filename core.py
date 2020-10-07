@@ -63,8 +63,8 @@ async def unmute(channel, member, role):
     await channel.send("{0} is no longer choi'd".format(member.mention))
 
 def is_moderator(guild, member):
-    mod_role = GUILDS[guild]["roles"]["Moderator"]
-    admin_role = GUILDS[guild]["roles"]["Admin"]
+    mod_role = GUILDS[guild]["roles"]["Fascist"]
+    admin_role = GUILDS[guild]["roles"]["Dictator"]
     if mod_role in member.roles or admin_role in member.roles or member == client.user:
         return True
     
@@ -92,7 +92,7 @@ async def on_member_join(member):
     c.execute(query)
     conn.commit()
 
-    return await member.add_roles(GUILDS[member.guild]["ranks"]["Newcomer"]["role"])  
+    return await member.add_roles(GUILDS[member.guild]["ranks"]["Foreigner"]["role"])  
     
 @client.event
 async def on_ready():
@@ -103,13 +103,13 @@ async def on_ready():
         guild_id = guild.id
         
         roles = {
-            "Admin": None,
-            "Moderator": None,
+            "Dictator": None,
+            "Fascist": None,
             "Muted": None,
             "Bot": None
         }
         ranks = OrderedDict([
-            ("Newcomer", {"level": 1, "role": None}),
+            ("Foreigner", {"level": 1, "role": None}),
             ("Citizen", {"level": 5, "role": None}),
             ("Elite", {"level": 10, "role": None}),
             ("Elder", {"level": 15, "role": None}),
