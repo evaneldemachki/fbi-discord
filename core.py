@@ -212,7 +212,7 @@ async def on_message(message):
             await message.guild.kick(member, reason=reason)
 
         embed = Embed(
-            title="Kicked user {0}".format(member.mention), 
+            title="Kicked user {0}".format(str(member)), 
             description=reason, color=COLORS["mod-negative"], 
             timestamp=dt.datetime.now()
         )
