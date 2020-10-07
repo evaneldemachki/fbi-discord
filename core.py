@@ -182,7 +182,44 @@ async def on_message(message):
     if not message.author.bot:
         if not message.author.id in FROZEN:
             await LEVELER.register_message(message)
-    
+
+    if message.content.split(' ')[0] == "!kick": 
+        if not is_moderator(message.guild, message.author):
+            response = "**Error: permission denied.**"
+            return await message.channel.send(response)      
+
+        if len(message.mentions) != 1:
+            response = "**Error: invalid usage of !kick.**"
+            return await message.channel.send(response)
+        
+        msg_split = message.content.split(' ')[1:]
+        if msg_split[0][0].strip() != "<" or msg_split[0][-1].strip() != ">":
+            response = "**Error: invalid usage of !kick.**"
+            return await message.channel.send(response)
+
+        member = message.mentions[0]
+        msg_split = msg_split[1:]
+
+        if message.author.top_role <= member.top_role:
+            response = "**Error: target rank is equal to or above your own.**"
+            return await message.channel.send(response)  
+
+        if len(msg_split) == 0:
+            reason = "*No reason specified*"
+            await message.guild.kick(member)
+        else:
+            reason = ' '.join(msg_split)
+            await message.guild.kick(member, reason)
+
+        embed = Embed(
+            title="Kicked user {0}".format(member.mention), 
+            description=reason, color=COLORS["mod-negative"], 
+            timestamp=dt.datetime.now()
+        )
+        embed.set_author(name=message.author, icon_url=str(message.author.avatar_url))
+
+        return await message.channel.send(embed=embed)
+
     if message.content.split(' ')[0] == "!freeze": 
         if not is_moderator(message.guild, message.author):
             response = "**Error: permission denied.**"
