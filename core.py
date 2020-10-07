@@ -609,21 +609,7 @@ async def on_message(message):
                 response = "**Error: invalid title**"
                 return await message.channel.send(response)
 
-            message.channel.send(embed=embed)                               
-
-    
-
-        quote_count = 0
-        indices = []
-        for i in range(len(msg)):
-            if char == ""
-
-        if len(msg_split) not in [1,2]:
-            response = "**Error: invalid usage of !movies**"
-            return await message.channel.send(response)  
-
-        count_quotes = 0
-        for char in msg          
+            message.channel.send(embed=embed)                                   
           
     if message.content.split(' ')[0] == "!choi":
         if not message.content.rstrip() == "!choi":
