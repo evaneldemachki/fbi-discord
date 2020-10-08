@@ -427,9 +427,27 @@ async def on_message(message):
 
         channels = []
         channel_ids = json.loads(member_data[1])
+        removals = []
         for ch in channel_ids:
-            channels.append("  -  {0}".format(message.guild.get_channel(ch).mention))
-
+            channel = message.guild.get_channel(ch)
+            if channel is None: # channel no longer exists
+                # queue channel removal
+                removals.append(ch)
+            else:
+                channels.append("  -  {0}".format(channel.mention))
+        
+        if len(removals) != 0:
+            # remove deleted channels
+            for ch in removals:
+                channel_ids.pop(channel_ids.index(ch))
+            # re-insert into database
+            query = "UPDATE members SET channels='{1}' WHERE (USER_ID = {1} and GUILD_ID = {2})"
+            query = query.format(channel_ids, member.id, message.guild.id)
+            c.execute(query)
+            conn.commit()
+            # log database update
+            print("Channel(s) [{0}] no longer exist(s) -> updated database".format(removals))
+           
         if len(channels) != 0:
             channels = "\n".join(channels)
         else:
