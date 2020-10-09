@@ -431,6 +431,7 @@ async def on_message(message):
             query = query.format(json.dumps([]), member.id, message.guild.id)
             c.execute(query)
             conn.commit()
+            member_data = list(member_data)
             member_data[1] = "[]"
 
         channel_ids = json.loads(member_data[1])
