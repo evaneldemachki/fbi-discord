@@ -426,6 +426,12 @@ async def on_message(message):
         member_data = c.fetchone()
 
         channels = []
+        if type(member_data[1]) == int:
+            query = "UPDATE members SET channels='{1}' WHERE (USER_ID = {1} and GUILD_ID = {2})"
+            query = query.format(json.dumps([]), member.id, message.guild.id)
+            c.execute(query)
+            conn.commit()
+            member_data[1] = []          
         channel_ids = json.loads(member_data[1])
         removals = []
         for ch in channel_ids:
@@ -442,7 +448,7 @@ async def on_message(message):
                 channel_ids.pop(channel_ids.index(ch))
             # re-insert into database
             query = "UPDATE members SET channels='{1}' WHERE (USER_ID = {1} and GUILD_ID = {2})"
-            query = query.format(channel_ids, member.id, message.guild.id)
+            query = query.format(json.dumps(channel_ids), member.id, message.guild.id)
             c.execute(query)
             conn.commit()
             # log database update
