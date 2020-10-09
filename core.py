@@ -426,12 +426,13 @@ async def on_message(message):
         member_data = c.fetchone()
 
         channels = []
-        if type(member_data[1]) == int:
+        if member_data[0] == 627543923052773417:
             query = "UPDATE members SET channels='{1}' WHERE (USER_ID = {1} and GUILD_ID = {2})"
             query = query.format(json.dumps([]), member.id, message.guild.id)
             c.execute(query)
             conn.commit()
-            member_data[1] = []          
+            member_data[1] = "[]"
+
         channel_ids = json.loads(member_data[1])
         removals = []
         for ch in channel_ids:
