@@ -97,7 +97,7 @@ async def on_member_join(member):
         return
 
     query = """
-    INSERT INTO members (guild_id, member_id, channels, xp, infractions)
+    INSERT INTO members (guild_id, user_id, channels, xp, infractions)
     VALUES({0}, {1}, '{2}', {3}, {4})
     ON CONFLICT DO NOTHING
     """.format(member.guild.id, member.id, "[]", 0, 0)
