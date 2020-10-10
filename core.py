@@ -17,6 +17,11 @@ from collections import OrderedDict
 
 from wiki import find_page, get_summary
 
+intents = discord.Intents.default()
+intents.members = True
+
+client = discord.Client(intents=intents)
+
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -40,6 +45,17 @@ create table if not exists members (
     )
 )
 ''')
+c.execute('''
+create table if not exists channels (
+    guild_id bigint null,
+    channel_id bigint null,
+    owner_id bigint null,
+    unique (
+        guild_id,
+        user_id
+    )
+)
+''')
 
 conn.commit()
 
@@ -54,8 +70,6 @@ IGNORE_ROLES = ["@everyone", "Muted"]
 IGNORE_CHANNELS = []
 FROZEN = []
 LEVELER = None
-
-client = discord.Client()
 
 async def unmute(channel, member, role):
     await asyncio.sleep(60)
@@ -77,17 +91,16 @@ def is_muted(guild, member):
     
     return False
 
-# TODO: this doesn't work
 @client.event
 async def on_member_join(member):
     if member.bot:
         return
 
     query = """
-    INSERT INTO members (user_id, guild_id, channels, xp, infractions)
+    INSERT INTO members (guild_id, member_id, channels, xp, infractions)
     VALUES({0}, {1}, '{2}', {3}, {4})
     ON CONFLICT DO NOTHING
-    """.format(member.id, member.guild.id, "[]", 0, 0)
+    """.format(member.guild.id, member.id, "[]", 0, 0)
 
     c.execute(query)
     conn.commit()
