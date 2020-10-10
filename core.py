@@ -52,7 +52,7 @@ create table if not exists channels (
     owner_id bigint null,
     unique (
         guild_id,
-        user_id
+        channel_id
     )
 )
 ''')
