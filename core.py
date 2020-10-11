@@ -538,7 +538,8 @@ async def remove_owner_error(ctx, error):
     if isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
-        await ctx.send("**Invalid usage of command !remove-owner**")
+        await ctx.send(str(error))
+        #await ctx.send("**Invalid usage of command !remove-owner**")
 
 @bot.command()
 async def wiki(ctx, search_str: str):
