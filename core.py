@@ -10,6 +10,7 @@ import datetime as dt
 
 from db import Connection
 from routing import Routes
+from levels import Leveler
 from errors import ConfigurationError
 
 import requests
@@ -155,8 +156,6 @@ async def on_ready():
                 if channel.id not in channel_ids:
                     routes.insert_new_channel(channel)
                     await debug.send("LOG: new channel {0} detected -> updated database".format(str(channel)))
-
-
 
     LEVELER = Leveler(conn, c, CACHE)
 
