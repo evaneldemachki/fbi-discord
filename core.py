@@ -150,7 +150,7 @@ async def on_ready():
                     await debug.send("LOG: new member {0} detected -> updated database".format(str(member)))
         
         member_ids = routes.member_ids(guild)
-        async for channel in guild.fetch_channels():
+        async for channel in await guild.fetch_channels():
             if channel.id not in member_ids:
                 routes.insert_new_channel(channel)
                 await debug.send("LOG: new channel {0} detected -> updated database".format(str(channel)))            
