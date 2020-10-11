@@ -370,7 +370,7 @@ async def unmute_error(ctx, error):
     else:
         await ctx.send("**Invalid usage of command !unmute**")
 
-@bot.command
+@bot.command()
 async def muted(ctx):
     members = []
     muted_role = CACHE[ctx.guild.id]["roles"]["Muted"]
