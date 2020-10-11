@@ -149,11 +149,14 @@ async def on_ready():
                     routes.insert_new_user(member)
                     await debug.send("LOG: new member {0} detected -> updated database".format(str(member)))
         
-        member_ids = routes.member_ids(guild)
+        channel_ids = routes.channel_ids(guild)
         for channel in await guild.fetch_channels():
-            if channel.id not in member_ids:
-                routes.insert_new_channel(channel)
-                await debug.send("LOG: new channel {0} detected -> updated database".format(str(channel)))            
+            if isinstance(channel, discord.TextChannel):
+                if channel.id not in channel_ids:
+                    routes.insert_new_channel(channel)
+                    await debug.send("LOG: new channel {0} detected -> updated database".format(str(channel)))
+
+
 
     LEVELER = Leveler(conn, c, CACHE)
 
@@ -181,7 +184,7 @@ async def on_member_join(member):
 async def add_xp(message):
     if message.author.bot:
         return
-    if message.author.id in CACHE[guild.id]["frozen"]:
+    if message.author.id in CACHE[message.guild.id]["frozen"]:
         return
     
     await LEVELER.register_message(message)
