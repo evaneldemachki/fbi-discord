@@ -208,7 +208,7 @@ async def kick(ctx, member: discord.Member, reason: str = None):
     embed = Embed(
         title="Kicked user {0}".format(str(member)), 
         description=reason, 
-        color=COLORS["mod-negative"], 
+        color=CACHE[ctx.guild.id]["colors"]["mod-negative"], 
         timestamp=dt.datetime.now()
     )
     embed.set_author(name=ctx.author, icon_url=str(ctx.author.avatar_url))
@@ -419,7 +419,7 @@ async def profile(ctx, member: discord.Member = None):
 
     embed = Embed(
         title=member.nick,
-        color=CACHE[ctx.guild.id]["colors"]["mod-neutral"]
+        color=member.top_role.color
     ).set_thumbnail(url=member.avatar_url).set_author(name=member)
 
     embed.set_footer(
