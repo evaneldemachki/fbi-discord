@@ -1,6 +1,7 @@
 import asyncio
 import datetime as dt
 from discord import Embed
+from collections import OrderedDict
 
 def rank_gen(factor):
     x = [0]
@@ -25,13 +26,13 @@ print("RANKS")
 print(RANKS)
 
 class Leveler:
-    def __init__(self, conn, c, GUILDS):
+    def __init__(self, conn, c, CACHE):
         self.conn = conn
         self.c = c
-        self.GUILDS = GUILDS
+        self.CACHE = CACHE
     
     def get_level(self, guild, member):
-        query = """select XP from MEMBERS where (USER_ID = {0} and GUILD_ID = {1})"""
+        query = """SELECT XP from MEMBERS where (USER_ID = {0} and GUILD_ID = {1})"""
         query = query.format(member.id, guild.id)
 
         self.c.execute(query)
@@ -85,21 +86,22 @@ class Leveler:
             )
             embed.set_author(name=member, icon_url=str(member.avatar_url))
 
-            channel = self.GUILDS[guild]["channels"]["feed"]
+            channel = self.CACHE[guild.id]["channels"]["feed"]
             await channel.send(embed=embed)
 
             if promotion not in [5, 10, 15, 20]:
                 return
 
             # TODO: fix this mess
+            ranks = OrderedDict(self.CACHE[guild.id]["ranks"])
             rank_up = None
             current_ranks = []
-            rank_keys = list(self.GUILDS[guild]["ranks"].keys())
+            rank_keys = list(ranks.keys())
             for i in range(len(rank_keys)):
-                rank = self.GUILDS[guild]["ranks"][rank_keys[i]]
+                rank = ranks[rank_keys[i]]
                 if promotion >= rank["level"]:
                     rank_up = rank
-                    current_ranks.append(self.GUILDS[guild]["ranks"][rank_keys[i-1]]["role"])
+                    current_ranks.append(ranks[rank_keys[i-1]]["role"])
 
             await member.add_roles(rank_up["role"])
             await member.remove_roles(*current_ranks)
@@ -113,5 +115,5 @@ class Leveler:
             )
             embed.set_author(name=member, icon_url=str(member.avatar_url))
 
-            channel = self.GUILDS[guild]["channels"]["feed"]
+            channel = self.CACHE[guild.id]["channels"]["feed"]
             return await channel.send(embed=embed)
