@@ -50,7 +50,7 @@ class Routes:
             INSERT INTO channels (guild_id, channel_id, owner_id)
             VALUES({0}, {1}, {2})
             ON CONFLICT DO NOTHING
-        """.format(channel.guild.id, channel.id, "[]", 0, 0)
+        """.format(channel.guild.id, channel.id, None)
 
         self.c.execute(query)
         self.conn.commit()
