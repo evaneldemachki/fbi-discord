@@ -236,8 +236,9 @@ async def kick(ctx, member: discord.Member, reason: str = None):
 
 @kick.error
 async def kick_error(ctx, error):
-    return await ctx.send(str(error))
-    if isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.CommandError):
+        pass
+    elif isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !kick**")
@@ -306,7 +307,10 @@ async def blacklist(ctx, channel: discord.TextChannel = None):
 
 @blacklist.error
 async def blacklist_error(ctx, error):
-    return await ctx.send("""```{0}```""".format(str(error)))
+    if isinstance(error, commands.CommandError):
+        pass
+    else:
+        return await ctx.send("**Invalid usage of command !blacklist**")
 
 @bot.command()
 @commands.check(is_blacklisted)
@@ -341,7 +345,9 @@ async def freeze(ctx, member: discord.Member, reason: str = None):
 
 @freeze.error
 async def freeze_error(ctx, error):
-    if isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.CommandError):
+        pass
+    elif isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !freeze**")
@@ -380,7 +386,9 @@ async def thaw(ctx, member: discord.Member, reason: str = None):
 
 @thaw.error
 async def thaw_error(ctx, error):
-    if isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.CommandError):
+        pass
+    elif isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !thaw**")
@@ -419,7 +427,9 @@ async def mute(ctx, member: discord.Member, reason: str = None):
 
 @mute.error
 async def mute_error(ctx, error):
-    if isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.CommandError):
+        pass
+    elif isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !thaw**")
@@ -458,7 +468,9 @@ async def unmute(ctx, member: discord.Member, reason: str = None):
 
 @unmute.error
 async def unmute_error(ctx, error):
-    if isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.CommandError):
+        pass
+    elif isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !unmute**")
@@ -493,7 +505,9 @@ async def muted(ctx):
 
 @muted.error
 async def muted_error(ctx, error):
-    if isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.CommandError):
+        pass
+    elif isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !muted**")
@@ -565,7 +579,9 @@ async def profile(ctx, member: discord.Member = None):
 
 @profile.error
 async def profile_error(ctx, error):
-    if isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.CommandError):
+        pass
+    elif isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !profile**")
@@ -610,7 +626,9 @@ async def set_owner(ctx, channel: discord.TextChannel, member: discord.Member):
 
 @set_owner.error
 async def set_owner_error(ctx, error):
-    if isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.CommandError):
+        pass
+    elif isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !set-owner**")
@@ -647,7 +665,9 @@ async def remove_owner(ctx, channel: discord.TextChannel):
     
 @remove_owner.error
 async def remove_owner_error(ctx, error):
-    if isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.CommandError):
+        pass
+    elif isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !remove-owner**")
@@ -678,7 +698,10 @@ async def wiki(ctx, search_str: str):
 
 @wiki.error
 async def wiki_error(ctx, error):
-    return await ctx.send("**Invalid usage of command !wiki**")
+    if isinstance(error, commands.CommandError):
+        pass
+    else:
+        return await ctx.send("**Invalid usage of command !wiki**")
 
 @bot.command()
 @commands.check(is_blacklisted)
@@ -705,7 +728,10 @@ async def movies(ctx, search_str: str, index: int = None):
 
 @movies.error
 async def movies_error(ctx, error):
-    return await ctx.send("**Invalid usage of command !movies**")
+    if isinstance(error, commands.CommandError):
+        pass
+    else:
+        return await ctx.send("**Invalid usage of command !movies**")
 
 @bot.command()
 @commands.check(is_blacklisted)
@@ -723,7 +749,10 @@ async def joke(ctx):
 
 @joke.error
 async def joke_error(ctx, error):
-    return await ctx.send("**Invalid usage of command !movies**")
+    if isinstance(error, commands.CommandError):
+        pass
+    else:
+        return await ctx.send("**Invalid usage of command !movies**")
 
 @bot.command()
 @commands.check(is_blacklisted)
@@ -750,6 +779,9 @@ async def trump(ctx):
 
 @trump.error
 async def trump_error(ctx, error):
-    return await ctx.send("**Trump quotes are temporarily disabled, sorry!**")
+    if isinstance(error, commands.CommandError):
+        pass
+    else:
+        return await ctx.send("**Trump quotes are temporarily disabled, sorry!**")
 
 bot.run(TOKEN)
