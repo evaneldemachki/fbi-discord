@@ -21,7 +21,7 @@ import pprint
 
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix='?', intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents)
 
 CONFIG = [
     {
@@ -591,7 +591,8 @@ async def movies(ctx, search_str: str, index: int = None):
 
 @movies.error
 async def movies_error(ctx, error):
-    return await ctx.send("**Invalid usage of command !movies**")
+    return await ctx.send(str(error))
+    #return await ctx.send("**Invalid usage of command !movies**")
 
 @bot.command()
 async def joke(ctx):
