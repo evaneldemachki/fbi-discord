@@ -265,7 +265,7 @@ async def blacklist(ctx, channel: discord.TextChannel = None):
             return await ctx.send(response)
     
     channel_data = routes.get_channel(channel)
-    if channel_data[-1] = True:
+    if channel_data[-1] == True:
         routes.blacklist_channel(channel, False)
         description = "Removed channel {0} from blacklist".format(channel.mention)
         color = "white"
