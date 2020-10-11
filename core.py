@@ -266,7 +266,7 @@ async def blacklist(ctx, channel: discord.TextChannel = None):
             color=CACHE[ctx.guild.id]["colors"]["mod-neutral"], 
             timestamp=dt.datetime.now()
         )
-        embed.set_author(name=bot.nick, icon_url=str(bot.user.avatar_url))
+        embed.set_author(name=bot.user.nick, icon_url=str(bot.user.avatar_url))
 
         await ctx.send(embed=embed)
 
