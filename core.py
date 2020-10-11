@@ -421,7 +421,7 @@ async def profile(ctx, member: discord.Member = None):
         avatar_url = "https://i.ibb.co/GHzrGJ0/aladeen.gif"
     else:
         avatar_url = member.avatar_url
-        
+
     embed = Embed(
         title=member.nick,
         color=member.top_role.color
@@ -497,6 +497,14 @@ async def set_owner(ctx, channel: discord.TextChannel, member: discord.Member):
     
     routes.set_channel_owner(channel, member)
 
+    await channel.set_permissions(
+        member, 
+        manage_channel=True,
+        manage_permissions=True,
+        manage_webhooks=True,
+        manage_messages=True
+    )
+
     description = "Channel {0} is now owned by {1}".format(channel.mention, member.mention)
     embed = Embed(
         title="Set Channel Owner", 
@@ -529,7 +537,9 @@ async def remove_owner(ctx, channel: discord.TextChannel):
         routes.remove_channel_owner(channel)
     else:
         response = "**Error: channel is currently unowned.**"
-        return await ctx.send(response)  
+        return await ctx.send(response)
+    
+    await channel.edit(sync_permissions=True)
 
     description = "Channel {0} is now unowned.".format(channel.mention)
     embed = Embed(
