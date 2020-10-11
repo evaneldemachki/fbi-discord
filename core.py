@@ -417,10 +417,15 @@ async def profile(ctx, member: discord.Member = None):
     if member.bot:
         return
 
+    if member.id == 353697138854854658:
+        avatar_url = "https://i.ibb.co/GHzrGJ0/aladeen.gif"
+    else:
+        avatar_url = member.avatar_url
+        
     embed = Embed(
         title=member.nick,
         color=member.top_role.color
-    ).set_thumbnail(url=member.avatar_url).set_author(name=member)
+    ).set_thumbnail(url=avatar_url).set_author(name=member)
 
     embed.set_footer(
         text="Joined: {0}".format(str(member.joined_at).split(' ')[0]))
