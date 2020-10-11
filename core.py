@@ -490,7 +490,6 @@ async def set_owner(ctx, channel: discord.TextChannel, member: discord.Member):
     routes.set_channel_owner(channel, member)
 
     description = "Channel {0} is now owned by {1}".format(channel.mention, member.mention)
-
     embed = Embed(
         title="Set Channel Owner", 
         description=description, 
@@ -522,8 +521,9 @@ async def remove_owner(ctx, channel: discord.TextChannel):
         routes.remove_channel_owner(channel)
     else:
         response = "**Error: channel is currently unowned.**"
-        return await ctx.send(response)        
-    
+        return await ctx.send(response)  
+
+    description = "Channel {0} is now unowned.".format(channel.mention)
     embed = Embed(
         title="Removed Channel Owner", 
         description=description, 
@@ -538,8 +538,7 @@ async def remove_owner_error(ctx, error):
     if isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
-        await ctx.send(str(error))
-        #await ctx.send("**Invalid usage of command !remove-owner**")
+        await ctx.send("**Invalid usage of command !remove-owner**")
 
 @bot.command()
 async def wiki(ctx, search_str: str):
