@@ -242,7 +242,7 @@ async def freeze(ctx, member: discord.Member, reason: str = None):
     embed = Embed(
         title="Freeze", 
         description=description, 
-        color=color=CACHE[ctx.guild.id]["colors"]["mod-negative"], 
+        color=CACHE[ctx.guild.id]["colors"]["mod-negative"], 
         timestamp=dt.datetime.now()
     )
     embed.set_author(name=ctx.author, icon_url=str(ctx.author.avatar_url))
