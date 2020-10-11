@@ -76,6 +76,14 @@ def is_moderator(ctx):
     
     return False
 
+def cache_blacklist(guild):
+    # cache blacklist
+    blacklist_ids = routes.get_blacklist(guild)
+    for ch in blacklist_ids:
+        bl_channel = guild.get_channel(ch)
+        if bl_channel is not None:
+            CACHE[guild.id]["blacklist"].append(bl_channel)
+
 @bot.event
 async def on_ready():
     global CACHE
@@ -106,7 +114,8 @@ async def on_ready():
                 "debug": None
             },
             "frozen": [],
-            "colors": guild_config["colors"]
+            "colors": guild_config["colors"],
+            "blacklist": []
         }
         # cache administrator and moderator roles
         for key in ["Administrators", "Moderators"]:
@@ -159,6 +168,8 @@ async def on_ready():
                     routes.insert_new_channel(channel)
                     await debug.send("LOG: new channel {0} detected -> updated database".format(str(channel)))
 
+        cache_blacklist(guild)
+
     LEVELER = Leveler(conn, c, CACHE)
 
     for key in CACHE:
@@ -189,8 +200,15 @@ async def add_xp(message):
         return
     
     await LEVELER.register_message(message)
+
+async def is_blacklisted(ctx):
+    if ctx.message.channel in CACHE[ctx.guild.id]["blacklist"]:
+        return False
     
+    return True
+
 @bot.command()
+@commands.check(is_blacklisted)
 async def kick(ctx, member: discord.Member, reason: str = None):
     if not is_moderator(ctx):
         response = "**Error: permission denied.**"
@@ -226,6 +244,7 @@ async def kick_error(ctx, error):
 
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def blacklist(ctx, channel: discord.TextChannel = None):
     if channel is None:
         blacklist_ids = routes.get_blacklist(ctx.guild)
@@ -244,7 +263,7 @@ async def blacklist(ctx, channel: discord.TextChannel = None):
         embed = Embed(
             title="Blacklist", 
             description=description, 
-            color="black", 
+            color=CACHE[ctx.guild.id]["colors"]["mod-neutral"], 
             timestamp=dt.datetime.now()
         )
         embed.set_author(name=bot.nick, icon_url=str(bot.user.avatar_url))
@@ -267,17 +286,19 @@ async def blacklist(ctx, channel: discord.TextChannel = None):
     channel_data = routes.get_channel(channel)
     if channel_data[-1] == True:
         routes.blacklist_channel(channel, False)
+        CACHE[ctx.guild.id]["blacklist"].pop(CACHE[ctx.guild.id]["blacklist"].index(channel))
         description = "Removed channel {0} from blacklist".format(channel.mention)
         color = "white"
     else:
         routes.blacklist_channel(channel, True)
+        CACHE[ctx.guild.id]["blacklist"].append(channel)
         description = "Blacklisted channel {0}".format(channel.mention)
         color = "black"
     
     embed = Embed(
         title="Blacklist", 
         description=description, 
-        color=color, 
+        color=CACHE[ctx.guild.id]["colors"]["mod-neutral"], 
         timestamp=dt.datetime.now()
     )
     embed.set_author(name=ctx.author, icon_url=str(ctx.author.avatar_url))
@@ -289,6 +310,7 @@ async def blacklist_error(ctx, error):
     return await ctx.send("""```{0}```""".format(str(error)))
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def freeze(ctx, member: discord.Member, reason: str = None):
     if not is_moderator(ctx):
         response = "**Error: permission denied.**"
@@ -326,6 +348,7 @@ async def freeze_error(ctx, error):
         await ctx.send("**Invalid usage of command !freeze**")
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def thaw(ctx, member: discord.Member, reason: str = None):
     if not is_moderator(ctx):
         response = "**Error: permission denied.**"
@@ -364,6 +387,7 @@ async def thaw_error(ctx, error):
         await ctx.send("**Invalid usage of command !thaw**")
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def mute(ctx, member: discord.Member, reason: str = None):
     if not is_moderator(ctx):
         response = "**Error: permission denied.**"
@@ -402,6 +426,7 @@ async def mute_error(ctx, error):
         await ctx.send("**Invalid usage of command !thaw**")
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def unmute(ctx, member: discord.Member, reason: str = None):
     if not is_moderator(ctx):
         response = "**Error: permission denied.**"
@@ -440,6 +465,7 @@ async def unmute_error(ctx, error):
         await ctx.send("**Invalid usage of command !unmute**")
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def muted(ctx):
     members = []
     muted_role = CACHE[ctx.guild.id]["roles"]["Muted"]
@@ -474,6 +500,7 @@ async def muted_error(ctx, error):
         await ctx.send("**Invalid usage of command !muted**")
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def profile(ctx, member: discord.Member = None):
     if member is None:
         member = ctx.author
@@ -545,6 +572,7 @@ async def profile_error(ctx, error):
         await ctx.send("**Invalid usage of command !profile**")
 
 @bot.command(name='set-owner')
+@commands.check(is_blacklisted)
 async def set_owner(ctx, channel: discord.TextChannel, member: discord.Member):
     if not is_moderator(ctx):
         response = "**Error: permission denied.**"
@@ -589,6 +617,7 @@ async def set_owner_error(ctx, error):
         await ctx.send("**Invalid usage of command !set-owner**")
 
 @bot.command(name='remove-owner')
+@commands.check(is_blacklisted)
 async def remove_owner(ctx, channel: discord.TextChannel):
     if not is_moderator(ctx):
         response = "**Error: permission denied.**"
@@ -625,6 +654,7 @@ async def remove_owner_error(ctx, error):
         await ctx.send("**Invalid usage of command !remove-owner**")
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def wiki(ctx, search_str: str):
     page = find_page(search_str)
     if page is None:
@@ -652,6 +682,7 @@ async def wiki_error(ctx, error):
     return await ctx.send("**Invalid usage of command !wiki**")
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def movies(ctx, search_str: str, index: int = None):
     if index is None:
         embed = movie_search(search_str)
@@ -678,6 +709,7 @@ async def movies_error(ctx, error):
     return await ctx.send("**Invalid usage of command !movies**")
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def joke(ctx):
     url = "https://sv443.net/jokeapi/v2/joke/Dark?type=twopart"
     content = json.loads(requests.get(url).content)
@@ -695,6 +727,7 @@ async def joke_error(ctx, error):
     return await ctx.send("**Invalid usage of command !movies**")
 
 @bot.command()
+@commands.check(is_blacklisted)
 async def trump(ctx):
     return await ctx.send("**Trump quotes are temporarily disabled, sorry!**")
     # response = random.choice(
