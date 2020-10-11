@@ -207,7 +207,8 @@ async def kick(ctx, member: discord.Member, reason: str = None):
 
     embed = Embed(
         title="Kicked user {0}".format(str(member)), 
-        description=reason, color=COLORS["mod-negative"], 
+        description=reason, 
+        color=COLORS["mod-negative"], 
         timestamp=dt.datetime.now()
     )
     embed.set_author(name=ctx.author, icon_url=str(ctx.author.avatar_url))
@@ -216,6 +217,7 @@ async def kick(ctx, member: discord.Member, reason: str = None):
 
 @kick.error
 async def kick_error(ctx, error):
+    return await ctx.send(str(error))
     if isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
@@ -613,27 +615,28 @@ async def joke_error(ctx, error):
 
 @bot.command()
 async def trump(ctx):
-    response = random.choice(
-        c.execute('SELECT * FROM trump').fetchall())[0]
+    return await ctx.send("**Trump quotes are temporarily disabled, sorry!**")
+    # response = random.choice(
+    #     c.execute('SELECT * FROM trump').fetchall())[0]
     
-    if '—' in response:
-        response = response.split('—')[0] + '\n— ' + response.split('—')[1]
-    else:
-        response += '\n— Donald J. Trump'
+    # if '—' in response:
+    #     response = response.split('—')[0] + '\n— ' + response.split('—')[1]
+    # else:
+    #     response += '\n— Donald J. Trump'
 
-    embed = Embed(
-        description=response
-    )
+    # embed = Embed(
+    #     description=response
+    # )
 
-    embed.set_thumbnail(
-        url="https://i.insider.com/5ea18a43a2fd914dad7b2073?width=1100&format=jpeg&auto=webp"
-    )
+    # embed.set_thumbnail(
+    #     url="https://i.insider.com/5ea18a43a2fd914dad7b2073?width=1100&format=jpeg&auto=webp"
+    # )
 
-    await ctx.send(embed=embed)
-    return
+    # await ctx.send(embed=embed)
+    # return
 
 @trump.error
 async def trump_error(ctx, error):
-    return await ctx.send("**Invalid usage of command !trump**")
+    return await ctx.send("**Trump quotes are temporarily disabled, sorry!**")
 
 bot.run(TOKEN)
