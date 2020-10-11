@@ -497,13 +497,13 @@ async def set_owner(ctx, channel: discord.TextChannel, member: discord.Member):
     
     routes.set_channel_owner(channel, member)
 
-    await channel.set_permissions(
-        member, 
+    overwrite = discord.PermissionOverwrite(
         manage_channel=True,
         manage_permissions=True,
         manage_webhooks=True,
         manage_messages=True
     )
+    await channel.set_permissions(member, overwrite)
 
     description = "Channel {0} is now owned by {1}".format(channel.mention, member.mention)
     embed = Embed(
