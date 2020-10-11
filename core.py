@@ -22,6 +22,7 @@ import pprint
 
 intents = discord.Intents.default()
 intents.members = True
+intents.guilds = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 CONFIG = [
@@ -497,13 +498,15 @@ async def set_owner(ctx, channel: discord.TextChannel, member: discord.Member):
     
     routes.set_channel_owner(channel, member)
 
+    await channel.edit(sync_permissions=True)
+
     overwrite = discord.PermissionOverwrite(
         manage_channels=True,
         manage_permissions=True,
         manage_webhooks=True,
         manage_messages=True
     )
-    await channel.set_permissions(member, overwrite)
+    await channel.set_permissions(member, overwrite=overwrite)
 
     description = "Channel {0} is now owned by {1}".format(channel.mention, member.mention)
     embed = Embed(
@@ -517,7 +520,6 @@ async def set_owner(ctx, channel: discord.TextChannel, member: discord.Member):
 
 @set_owner.error
 async def set_owner_error(ctx, error):
-    return await ctx.send("""```{0}```""".format(str(error)))
     if isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
