@@ -493,7 +493,8 @@ async def set_owner(ctx, channel: discord.TextChannel, member: discord.Member):
 
     embed = Embed(
         title="Set Channel Owner", 
-        description=description, color=COLORS["mod-positive"], 
+        description=description, 
+        color=CACHE[ctx.guild.id]["colors"]["mod-positive"], 
         timestamp=dt.datetime.now()
     ).set_author(name=str(ctx.author), icon_url=str(ctx.author.avatar_url))
 
@@ -517,12 +518,16 @@ async def remove_owner(ctx, channel: discord.TextChannel):
         response = "**Error: channel not found.**"
         return await ctx.send(response)
 
-    if channel_data[2] is None:
+    if channel_data[2] is not None:
         routes.remove_channel_owner(channel)
+    else:
+        response = "**Error: channel is currently unowned.**"
+        return await ctx.send(response)        
     
     embed = Embed(
         title="Removed Channel Owner", 
-        description=description, color=COLORS["mod-negative"], 
+        description=description, 
+        color=CACHE[ctx.guild.id]["colors"]["mod-negative"], 
         timestamp=dt.datetime.now()
     ).set_author(name=str(ctx.author), icon_url=str(ctx.author.avatar_url))
 
@@ -549,7 +554,8 @@ async def wiki(ctx, search_str: str):
 
     embed = Embed(
         title=title, description=summary["extract"], 
-        color=COLORS["mod-neutral"], timestamp=dt.datetime.now()
+        color=CACHE[ctx.guild.id]["colors"]["mod-neutral"], 
+        timestamp=dt.datetime.now()
     ).set_author(name="wikipedia.com", url=summary["url"], icon_url=icon_url)
 
     if summary["thumbnail"] is not None:
