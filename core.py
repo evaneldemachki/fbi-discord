@@ -10,7 +10,7 @@ import datetime as dt
 
 from db import Connection
 from routing import Routes
-from levels import Leveler
+from level import Leveler
 from errors import ConfigurationError
 
 import requests
