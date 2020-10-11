@@ -48,9 +48,9 @@ class Routes:
     def insert_new_channel(self, channel):
         query = """
             INSERT INTO channels (guild_id, channel_id, owner_id)
-            VALUES({0}, {1}, {2})
+            VALUES({0}, {1}, NULL)
             ON CONFLICT DO NOTHING
-        """.format(channel.guild.id, channel.id, None)
+        """.format(channel.guild.id, channel.id)
 
         self.c.execute(query)
         self.conn.commit()
