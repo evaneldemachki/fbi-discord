@@ -65,6 +65,13 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 conn = Connection()
 c = conn.cursor
 
+query = """
+    ALTER TABLE channels 
+    ADD COLUMN blacklist bool null;
+"""
+c.execute(query)
+conn.commit()
+
 routes = Routes(conn, c)
 
 def is_moderator(ctx):
