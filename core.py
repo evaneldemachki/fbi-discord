@@ -14,7 +14,8 @@ from level import Leveler
 from errors import ConfigurationError
 
 import requests
-import movies
+from movies import search as movie_search
+from movies import load as movie_load
 from wiki import find_page, get_summary
 
 import pprint
@@ -570,7 +571,7 @@ async def wiki_error(ctx, error):
 @bot.command()
 async def movies(ctx, search_str: str, index: int = None):
     if index is None:
-        embed = movies.search(search_str)
+        embed = movie_search(search_str)
         if embed is None:
             response = "**Sorry, no titles found by that name**"
             return await ctx.send(response)
@@ -578,7 +579,7 @@ async def movies(ctx, search_str: str, index: int = None):
         return await ctx.send(embed=embed)
     else:
         try:
-            embed = movies.load(search_str, index)
+            embed = movie_load(search_str, index)
         except IndexError:
             response = "**Error: invalid index**"
             return await ctx.send(response)
@@ -591,8 +592,7 @@ async def movies(ctx, search_str: str, index: int = None):
 
 @movies.error
 async def movies_error(ctx, error):
-    return await ctx.send(str(error))
-    #return await ctx.send("**Invalid usage of command !movies**")
+    return await ctx.send("**Invalid usage of command !movies**")
 
 @bot.command()
 async def joke(ctx):
