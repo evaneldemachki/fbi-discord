@@ -226,6 +226,69 @@ async def kick_error(ctx, error):
 
 
 @bot.command()
+async def blacklist(ctx, channel: discord.TextChannel = None):
+    if channel is None:
+        blacklist_ids = routes.get_blacklist(ctx.guild)
+        bl_channels = []
+        removals = []
+        for ch in blacklist_ids:
+            bl_channel = ctx.guild.get_channel(ch)
+            if bl_channel is None:
+                removals.append(ch)
+            else:
+                bl_channels.append(
+                    " - {0}".format(bl_channel.mention))
+        
+        description = "\n".join(bl_channels)
+
+        embed = Embed(
+            title="Blacklist", 
+            description=description, 
+            color="black", 
+            timestamp=dt.datetime.now()
+        )
+        embed.set_author(name=bot.nick, icon_url=str(bot.user.avatar_url))
+
+        await ctx.send(embed=embed)
+
+        if len(removals) != 0: # TODO: replace with on-channel-delete event handler
+            debug = CACHE[ctx.guild.id]["channels"]["debug"]
+            for ch in removals:
+                routes.remove_channel(ctx.guild, ch)
+                await debug.send("""```LOG: detected deleted channel {0} -> updated database```""".format(ch))
+        
+        return
+        
+    if not is_moderator(ctx):
+        if ctx.author.id != routes.get_channel_owner(channel):
+            response = "**Error: permission denied.**"
+            return await ctx.send(response)
+    
+    channel_data = routes.get_channel(channel)
+    if channel_data[-1] = True:
+        routes.blacklist_channel(channel, False)
+        description = "Removed channel {0} from blacklist".format(channel.mention)
+        color = "white"
+    else:
+        routes.blacklist_channel(channel, True)
+        description = "Blacklisted channel {0}".format(channel.mention)
+        color = "black"
+    
+    embed = Embed(
+        title="Blacklist", 
+        description=description, 
+        color=color, 
+        timestamp=dt.datetime.now()
+    )
+    embed.set_author(name=ctx.author, icon_url=str(ctx.author.avatar_url))
+
+    return await ctx.send(embed=embed)
+
+@blacklist.error
+async def blacklist_error(ctx, error):
+    return await ctx.send("""```{0}```""".format(str(error)))
+
+@bot.command()
 async def freeze(ctx, member: discord.Member, reason: str = None):
     if not is_moderator(ctx):
         response = "**Error: permission denied.**"

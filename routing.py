@@ -19,6 +19,7 @@ def initialize(conn, c):
         guild_id bigint null,
         channel_id bigint null,
         owner_id bigint null,
+        blacklist bool null,
         unique (
             guild_id,
             channel_id
@@ -47,13 +48,33 @@ class Routes:
     
     def insert_new_channel(self, channel):
         query = """
-            INSERT INTO channels (guild_id, channel_id, owner_id)
-            VALUES({0}, {1}, NULL)
+            INSERT INTO channels (guild_id, channel_id, owner_id, blacklist)
+            VALUES({0}, {1}, NULL, false)
             ON CONFLICT DO NOTHING
         """.format(channel.guild.id, channel.id)
 
         self.c.execute(query)
         self.conn.commit()
+    
+    def blacklist_channel(self, channel, value):
+        value = "true" if value else "false"
+        query = """
+            UPDATE channels SET blacklist = {0} WHERE (CHANNEL_ID = {1} and GUILD_ID = {2})
+        """.format(value, channel.id, channel.guild.id)
+
+        self.c.execute(query)
+        self.conn.commit()
+    
+    def get_blacklist(self, guild):
+        query = """
+            SELECT channel_id FROM channels WHERE (GUILD_ID = {0} and BLACKLIST = true)
+        """.format(guild.id)
+
+        self.c.execute(query)
+        blacklist = self.c.fetchall()
+        blacklist = [bl[0] for bl in blacklist]
+
+        return blacklist
 
     def members(self, guild):
         query = """
@@ -73,7 +94,7 @@ class Routes:
         self.c.execute(query)
         member_ids = self.c.fetchall()
         member_ids = [mid[0] for mid in member_ids]
-        print(member_ids)
+        
         return member_ids
     
     def channel_ids(self, guild):
@@ -84,7 +105,7 @@ class Routes:
         self.c.execute(query)
         channel_ids = self.c.fetchall()
         channel_ids = [cid[0] for cid in channel_ids]
-        print(channel_ids)
+        
         return channel_ids    
 
     def get_member(self, member):
@@ -102,8 +123,17 @@ class Routes:
 
         self.c.execute(query)
         channel_data = self.c.fetchone()
-        print(channel_data)
-        return channel_data      
+        
+        return channel_data
+
+    def get_channel_owner(self, channel):
+        query = """SELECT owner_id from CHANNELS where (CHANNEL_ID = {0} and GUILD_ID = {1})"""
+        query = query.format(channel.id, channel.guild.id)
+
+        self.c.execute(query)
+        channel_owner = self.c.fetchone()[0]
+
+        return channel_owner    
     
     def member_channels(self, member):
         query = """SELECT channel_id from CHANNELS where (OWNER_ID = {0} and GUILD_ID = {1})"""
@@ -112,7 +142,7 @@ class Routes:
         self.c.execute(query)
         member_channels = self.c.fetchall()
         member_channels = [mc[0] for mc in member_channels]
-        
+
         return member_channels
     
     def remove_channel(self, guild, channel_id):
