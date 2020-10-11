@@ -517,6 +517,7 @@ async def set_owner(ctx, channel: discord.TextChannel, member: discord.Member):
 
 @set_owner.error
 async def set_owner_error(ctx, error):
+    return await ctx.send("""```{0}```""".format(str(error)))
     if isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
@@ -553,6 +554,7 @@ async def remove_owner(ctx, channel: discord.TextChannel):
     
 @remove_owner.error
 async def remove_owner_error(ctx, error):
+    return await ctx.send("""```{0}```""".format(str(error)))
     if isinstance(error, commands.MemberNotFound):
         await ctx.send("**Member not found**")
     else:
