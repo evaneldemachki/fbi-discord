@@ -111,7 +111,8 @@ class Routes:
 
         self.c.execute(query)
         member_channels = self.c.fetchall()
-        print(member_channels)
+        member_channels = [mc[0] for mc in member_channels]
+        
         return member_channels
     
     def remove_channel(self, guild, channel_id):
