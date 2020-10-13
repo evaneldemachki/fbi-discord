@@ -8,6 +8,7 @@ def initialize(conn, c):
         user_id bigint null,
         infractions int null,
         xp bigint null,
+        thumbnail text null,
         unique (
             user_id,
             guild_id
@@ -38,8 +39,8 @@ class Routes:
     
     def insert_new_user(self, member):
         query = """
-            INSERT INTO members (guild_id, user_id, xp, infractions)
-            VALUES({0}, {1}, {2}, {3})
+            INSERT INTO members (guild_id, user_id, xp, infractions, thumbnail)
+            VALUES({0}, {1}, {2}, {3}, null)
             ON CONFLICT DO NOTHING
         """.format(member.guild.id, member.id, 0, 0)
 
@@ -166,6 +167,13 @@ class Routes:
             UPDATE channels SET owner_id = NULL WHERE (guild_id = {0} and channel_id = {1})"""
         
         query = query.format(channel.guild.id, channel.id)
+
+        self.c.execute(query)
+        self.conn.commit()
+    
+    def set_thumbnail(self, member, url):
+        query = """UPDATE members SET thumbnail = '{0}' WHERE (guild_id = {1} and channel_id = {2})"""
+        query = query.format(url, member.guild.id, member.channel.id)
 
         self.c.execute(query)
         self.conn.commit()

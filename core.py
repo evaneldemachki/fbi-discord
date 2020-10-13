@@ -522,7 +522,7 @@ async def profile(ctx, member: discord.Member = None):
         return
 
     if member.id == 353697138854854658:
-        avatar_url = "https://i.ibb.co/BqCxYhf/f15f8eb62d7e7cad9d365b9292922fa8-w200.gif"
+        avatar_url = "https://i.ibb.co/5BmBC4X/itachi-illusion.gif"
     else:
         avatar_url = member.avatar_url
 
@@ -585,6 +585,29 @@ async def profile_error(ctx, error):
         await ctx.send("**Member not found**")
     else:
         await ctx.send("**Invalid usage of command !profile**")
+    
+@bot.command(name='set-thumbnail')
+@commands.check(is_blacklisted)
+async def set_thumbnail(ctx, url: str):
+    valid_ext = ["jpg", "jpeg", "png", "webp", "gif"]
+    if url[-1] == "/":
+        url = url[:-1]
+    
+    extension = url.split('.')[-1]
+    if extension not in valid_ext:
+        response = "**Error: invalid image url specified**"
+        return await ctx.send(response)
+    
+    routes.set_thumbnail(ctx.author, url)
+    profile(ctx)
+
+@set_thumbnail.error
+def set_thumbnail_error(ctx, error):
+    if isinstance(error, commands.CommandError):
+        pass
+    else:
+        await ctx.send("**Invalid usage of command !set-thumbnail**")
+
 
 @bot.command(name='set-owner')
 @commands.check(is_blacklisted)
