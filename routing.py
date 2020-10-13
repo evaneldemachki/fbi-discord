@@ -173,11 +173,11 @@ class Routes:
     
     def set_thumbnail(self, member, url = None):
         if url is None:
-            query = """UPDATE members SET thumbnail = null WHERE (guild_id = {0} and channel_id = {1})"""
-            query = query.format(member.guild.id, member.channel.id)
+            query = """UPDATE members SET thumbnail = null WHERE (guild_id = {0} and user_id = {1})"""
+            query = query.format(member.guild.id, member.id)
         else:
-            query = """UPDATE members SET thumbnail = '{0}' WHERE (guild_id = {1} and channel_id = {2})"""
-            query = query.format(url, member.guild.id, member.channel.id)
+            query = """UPDATE members SET thumbnail = '{0}' WHERE (guild_id = {1} and user_id = {2})"""
+            query = query.format(url, member.guild.id, member.id)
         
         self.c.execute(query)
         self.conn.commit()
