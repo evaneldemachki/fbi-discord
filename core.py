@@ -524,7 +524,7 @@ async def profile(ctx, member: discord.Member = None):
     embed = Embed(
         title=member.nick,
         color=member.top_role.color
-    ).set_author(name=member)
+    ).set_author(name=member, icon_url=member.avatar_url)
 
     embed.set_footer(
         text="Joined: {0}".format(str(member.joined_at).split(' ')[0]))
