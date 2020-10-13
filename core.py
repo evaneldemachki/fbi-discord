@@ -602,7 +602,7 @@ async def set_thumbnail(ctx, url: str):
     return await ctx.send("**Successfully set thumbnail image.**")
 
 @set_thumbnail.error
-def set_thumbnail_error(ctx, error):
+async def set_thumbnail_error(ctx, error):
     if isinstance(error, commands.CommandError):
         pass
     else:
@@ -615,7 +615,7 @@ async def reset_thumbnail(ctx):
     return await ctx.send("**Successfully reset thumbnail image.**")
 
 @reset_thumbnail.error
-def reset_thumbnail_error(ctx, error):
+async def reset_thumbnail_error(ctx, error):
     if isinstance(error, commands.CommandError):
         pass
     else:
