@@ -604,7 +604,7 @@ async def set_thumbnail(ctx, url: str):
 @set_thumbnail.error
 async def set_thumbnail_error(ctx, error):
     if isinstance(error, commands.CommandError):
-        pass
+        ctx.send("""```{0}```""".format(str(error)))
     else:
         await ctx.send("**Invalid usage of command !set-thumbnail**")
 
@@ -617,7 +617,7 @@ async def reset_thumbnail(ctx):
 @reset_thumbnail.error
 async def reset_thumbnail_error(ctx, error):
     if isinstance(error, commands.CommandError):
-        pass
+        ctx.send("""```{0}```""".format(str(error)))
     else:
         await ctx.send("**Invalid usage of command !reset-thumbnail**")
 
