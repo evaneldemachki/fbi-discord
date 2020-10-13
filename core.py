@@ -521,15 +521,10 @@ async def profile(ctx, member: discord.Member = None):
     if member.bot:
         return
 
-    if member.id == 353697138854854658:
-        avatar_url = "https://i.ibb.co/5BmBC4X/itachi-illusion.gif"
-    else:
-        avatar_url = member.avatar_url
-
     embed = Embed(
         title=member.nick,
         color=member.top_role.color
-    ).set_thumbnail(url=avatar_url).set_author(name=member)
+    ).set_author(name=member)
 
     embed.set_footer(
         text="Joined: {0}".format(str(member.joined_at).split(' ')[0]))
@@ -542,6 +537,11 @@ async def profile(ctx, member: discord.Member = None):
 
     member_data = routes.get_member(member)
     member_channels = routes.member_channels(member)
+    member_thumbnail = member_data[-1]
+    if member_thumbnail is None:
+        member_thumbnail = member.avatar_url
+    
+    embed.set_thumbnail(url=member_thumbnail)
 
     channels = []
     removals = []
@@ -599,7 +599,7 @@ async def set_thumbnail(ctx, url: str):
         return await ctx.send(response)
     
     routes.set_thumbnail(ctx.author, url)
-    profile(ctx)
+    return await ctx.send("**Successfully set thumbnail image.**")
 
 @set_thumbnail.error
 def set_thumbnail_error(ctx, error):
@@ -608,6 +608,18 @@ def set_thumbnail_error(ctx, error):
     else:
         await ctx.send("**Invalid usage of command !set-thumbnail**")
 
+@bot.command(name='reset-thumbnail')
+@commands.check(is_blacklisted)
+async def reset_thumbnail(ctx):
+    routes.set_thumbnail(ctx.author)
+    return await ctx.send("**Successfully reset thumbnail image.**")
+
+@reset_thumbnail.error
+def reset_thumbnail_error(ctx, error):
+    if isinstance(error, commands.CommandError):
+        pass
+    else:
+        await ctx.send("**Invalid usage of command !reset-thumbnail**")
 
 @bot.command(name='set-owner')
 @commands.check(is_blacklisted)
