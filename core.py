@@ -522,7 +522,7 @@ async def profile(ctx, member: discord.Member = None):
         return
 
     if member.id == 353697138854854658:
-        avatar_url = "https://i.ibb.co/GHzrGJ0/aladeen.gif"
+        avatar_url = "https://i.ibb.co/BqCxYhf/f15f8eb62d7e7cad9d365b9292922fa8-w200.gif"
     else:
         avatar_url = member.avatar_url
 
