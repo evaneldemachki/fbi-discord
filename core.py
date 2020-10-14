@@ -5,7 +5,7 @@ import asyncio
 import discord
 from discord import Embed
 from discord.ext import commands
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import datetime as dt
 
 from db import Connection
@@ -59,8 +59,9 @@ LEVELER = None
 FROZEN_USERS = []
 IGNORE_ROLES = ["@everyone", "Muted"]
 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+# load_dotenv()
+# TOKEN = os.getenv('DISCORD_TOKEN')
+TOKEN = os.environ["DISCORD_TOKEN"]
 
 conn = Connection()
 c = conn.cursor
