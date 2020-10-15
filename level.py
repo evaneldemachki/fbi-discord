@@ -93,15 +93,14 @@ class Leveler:
                 return
 
             # TODO: fix this mess
-            ranks = OrderedDict(self.CACHE[guild.id]["ranks"])
+            ranks = self.CACHE[guild.id]["ranks"]
             rank_up = None
             current_ranks = []
-            rank_keys = list(ranks.keys())
-            for i in range(len(rank_keys)):
-                rank = ranks[rank_keys[i]]
+            for i in range(ranks):
+                rank = ranks[i]
                 if promotion >= rank["level"]:
                     rank_up = rank
-                    current_ranks.append(ranks[rank_keys[i-1]]["role"])
+                    current_ranks.append(ranks[i-1]["role"])
 
             await member.add_roles(rank_up["role"])
             await member.remove_roles(*current_ranks)
